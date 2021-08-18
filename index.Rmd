@@ -1,6 +1,6 @@
 ---
 title: "ETC5521 Assignment 1"
-subtitle: "Your title"
+subtitle: "Analysis of global mobile and fixed telephone usage"
 team: brolga
 author:
   - Hanchen Wang 
@@ -27,7 +27,11 @@ landline <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/t
 ```
 # Introduction and motivation
 
-[FILL] Give the bigger picture of the data, and inspire the reader to learn more about the problem by reading your analysis. 
+It has been 45 years since the first landline telephone was invented in 1876. The telephone has changed a lot from how it works to how it looks. Today, mobile technology has spread rapidly around the globe and it is estimated that more than 5 billion people have mobile devices, and over half of these connections are smartphones. 
+
+“Digital connectivity plays a critical role in bettering lives, as it opens the door to unprecedented knowledge, employment and financial opportunities for billions of people worldwide,” said ITU Secretary-General Houlin Zhao. Because the telephone plays a crucial role in our life, we think it is valuable to analyze it.
+
+This analysis is based on information about mobile and landline phones collected by the @ITU -International Telecommunication Union and would like to analyze the phone subscription trend, percentage and other factors.
 
 # Data description
 
