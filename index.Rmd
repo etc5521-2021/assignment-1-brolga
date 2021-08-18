@@ -37,7 +37,7 @@ Specially:
 
 1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-2.What is the difference and occupation between phone and landline subscriptions in different countries in given year?
+2.What was the growth rate of mobile phones in each country from 1970 to 2017? What are the percentages of mobile and landline phones in 2017?
 
 3.What is the regression relationship between phone subscriptions and other variables? 
 
