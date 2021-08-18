@@ -33,6 +33,14 @@ It has been 45 years since the first landline telephone was invented in 1876. Th
 
 This analysis is based on information about mobile and landline phones collected by the @ITU -International Telecommunication Union and would like to analyze the phone subscription trend, percentage and other factors like the regression relationship between subscription and other factors.
 
+Specially: 
+
+1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
+
+2.What is the difference and occupation between phone and landline subscriptions in different countries in given year?
+
+3.What is the regression relationship between phone subscriptions and other variables? 
+
 # Data description
 
 The datasets are downloaded from the Github repository of [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-11-10). @Tidy-Tuesday is a weekly data project aimed at the R ecosystem and this report will use datasets adopted by it on November 10, 2020.
