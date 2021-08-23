@@ -11,6 +11,7 @@ output:
     toc: yes
     toc_float: yes
 bibliography: reference.bib
+biblio-style: authoryear-comp
 ---
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -21,6 +22,14 @@ library(dplyr)
 library(readr)
 library(tidyverse)
 library(naniar)
+library(rgdal)
+library(leaflet)
+library(RColorBrewer)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(plotly)
+library(gridExtra)
 ```
 
 ```{r rawData, include = FALSE}
@@ -39,7 +48,7 @@ Specially:
 
 1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-2.What was the growth rate of the subscription of mobile phones in each country from 1970 to 2017 and what was the proportion of the subscription of phone and landline in 2017?
+2.What was the growth rate of the subscription of mobile phones in each country from 2015 to 2017 and what was the proportion of the subscription of phone and landline in 2017?
 
 3.What is the regression relationship between phone subscriptions and other variables? 
 
@@ -90,6 +99,7 @@ landline %>%
 
 ## Mobilephone subscriptions vs GDP per capita  (`mobile.csv`)
 The dataset about Mobilephone subscriptions vs GDP per capita originated from an article-"Technology Adoption". This dataset was published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about mobilephone subscriptions and GPD per capita in each country from **1960** to **2017**.
+
 ### Structure of `mobile.csv`
 This dataset has `r nrow(mobile)` number of observations and `r ncol(mobile)` number of variables. The name, type and description of each variable in `mobile.csv` can be found in the data dictionary below.
 
@@ -130,11 +140,136 @@ mobile %>%
 
 ## What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-## What was the growth rate of the subscription of mobile phones in each country from 1970 to 2017 and what was the proportion of the subscription of phone and landline in 2017?
+## What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
+
+### What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017?
+```{r q2datagrow}
+q2_datause <- mobile%>% 
+  select(entity, year, mobile_subs) %>% 
+  filter(year %in% c(2015, 2017)) %>% 
+  mutate(year = as.character(year)) %>% 
+  mutate(year = recode(year, "2015" = "mobile2015", "2017" = "mobile2017"))
+q2_data <- q2_datause %>% 
+pivot_wider(id_cols = entity,  
+                     names_from = year, 
+                     values_from = mobile_subs) %>% 
+  na.omit() %>% 
+  mutate(growmobilerate = (mobile2017- mobile2015)/mobile2015) %>% select(entity, growmobilerate)
+```
+
+
+```{r q2mapdownload}
+q2_world_spdf <- readOGR( 
+  dsn= paste0(getwd(),"/DATA/world_shape_file/") , 
+  layer="TM_WORLD_BORDERS_SIMPL-0.3",
+  verbose=FALSE
+)
+```
+```{r q2mapcolor, include = FALSE}
+mypalette <- colorNumeric( palette="viridis", domain=q2_data$growmobilerate, na.color="transparent")
+mypalette(c(45,43))
+```
+```{r q2maptext}
+mytext <- paste(
+    "Country: ", q2_world_spdf@data$NAME,"<br/>", 
+    "Growth_rate: ", round(q2_data$growmobilerate, 2), 
+    sep="") %>%
+  lapply(htmltools::HTML)
+```
+
+```{r q2growmap, fig.cap= "Growth rate of the mobile subscription in each country during 2013 and 2017"}
+leaflet(q2_world_spdf) %>% 
+  addTiles()  %>% 
+  setView( lat=10, lng=0 , zoom=2) %>%
+  addPolygons( 
+    fillColor = ~mypalette(q2_data$growmobilerate), 
+    stroke=TRUE, 
+    fillOpacity = 0.9, 
+    color="white", 
+    weight=0.3,
+    label = mytext,
+    labelOptions = labelOptions( 
+      style = list("font-weight" = "normal", padding = "3px 8px"), 
+      textsize = "13px", 
+      direction = "auto"
+    )
+  ) %>%
+addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "Growth rate", position = "bottomleft" )
+
+```
+(Put mouse on each country you can see the detail about country names and the mobilephone subscription 3 years growthrate of them.)
+
+
+
+### What was the proportion of the subscription of phone and landline from 2000?
+```{r q2datapro}
+q2_landpick <- landline %>% select(
+ entity, year, total_pop, landline_subs, continent)
+q2_mobilepick <- mobile  %>%  select(
+  entity, year, mobile_subs) %>%
+rename(
+mobilecountry = entity,
+mobileyear = year) 
+q2_datapro <- q2_landpick %>% 
+  left_join(
+  q2_mobilepick, by = c("entity" = "mobilecountry", "year"= "mobileyear")) %>% 
+  filter(year>1999)
+```
+
+```{r animasub, fig.cap= "Compare proportion of the subscription of phone and landline from 2000 to 2017"}
+  proanimation <- 
+  q2_datapro%>% 
+  ggplot( aes(x = landline_subs, y = mobile_subs, 
+           size = total_pop, color = continent)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = 'Year: {round(frame_time)}', 
+       x = 'landline subscription(per 100 people)', 
+       y = 'mobile subscription(per 100 people)') +
+  transition_time(year)+
+  ease_aes('linear')
+
+animate(plot = proanimation,
+    render = gifski_renderer(),
+    duration = 18,
+    fps = 20)
+
+anim_save("proanimate.gif")
+```
+
+
+
+```{r compare1, fig.cap= "Proportion of the subscription of phone and landline in 2000 and 2017"}
+q2_p <- q2_datapro %>%
+  filter(year %in% c(2000, 2017)) %>% 
+  ggplot( aes(landline_subs, mobile_subs, 
+           size = total_pop, color = continent)) +
+  geom_point() +
+  theme_bw()+ 
+  facet_grid(~ year) +
+  theme(legend.position = 'none')
+ggplotly()
+```
+
+
+
+
+
 
 
 ## What is the regression relationship between phone subscriptions and other variables?
 
+
+
+
+
 [FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
 # References
+@PRC
+@WBD
+@R-dplyr
+@R-readr
+@R-tidyverse
+@R-naniar
+
