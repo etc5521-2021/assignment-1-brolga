@@ -199,11 +199,11 @@ addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "G
 ```
 (Put mouse on each country you can see the detail about country names and the mobilephone subscription 3 years growthrate of them.)
 
-From the figure \@ref(fig:q2growmap) we can see the increase of mobile phone subscriptions in recent years. In the three years from 2015 to 2017, the number of mobile phone subscriptions was not very large on average, staying at around 0. 
+From the figure \@ref(fig:q2growmap) we can see the **increase** of mobile phone subscriptions in recent years. In the three years from 2015 to 2017, the number of mobile phone subscriptions was not very large on average, staying at around 0. 
 
-There are even countries like France, Russia and Mexico that have negative growth rate. In three years the subscription of mobile phone in Libreria, decreased by 44%, which is extremely fast. However, it's worth noting that the number of mobile subscriptions in Somania and Burma grew by 73% over the same period.
+There are even countries like France, Russia and Mexico that have **negative** growth rate. In three years the subscription of mobile phone in Libreria, decreased by 44%, which is extremely fast. However, it's worth noting that the number of mobile subscriptions in **Somania** and **Burma** grew by 73% over the same period.
 
-Instead of seeing a rise in the number of mobile phones in developed countries, we see a partial decline. Perhaps as mentioned by PRC, the recent striking finding of INFORMATION technology in developed economies is the rise in smartphone ownership. They have already completed the popularization of mobile phones in the early stage. Now, compared with the increase in the number, the main trend is that smart phones replace ordinary mobile phones.
+Instead of seeing a rise in the number of mobile phones in developed countries, we see a partial decline. Perhaps as mentioned by @PRC, the developed economies have already completed the popularization of mobile phones in the early stage. Now, compared with the increase in the number, the main trend is that smart phones replace ordinary mobile phones.
 
 
 ### What was the proportion of the subscription of phone and landline from 2000?
@@ -244,9 +244,9 @@ animate(plot = proanimation,
 anim_save("proanimate.gif")
 ```
 
-As we can see from the animation \@ref(fig:animasub), the main trend since 2000 is that the number of fixed-line phones has been decreasing while the number of mobile phones has been increasing. 
+As we can see from the animation \@ref(fig:animasub), the main trend since 2000 is that the number of **fixed-line** phones has been **decreasing** while the number of **mobile** phones has been **increasing**. 
 
-European countries have more fixed-line phones, and more people still use them recently. Most African countries, by contrast, rarely use landlines. 
+**European** countries have more fixed-line phones, and more people still use them recently. Most **African** countries, by contrast, rarely use landlines. 
 
 This may be because people in European countries used to have landlines, so even as mobile phones became more popular, they still had a large proportion of people using them. However, African countries rarely used landline telephone from the beginning, so with the advent of mobile phone, they did not have the process of landline to mobile phone, and chose mobile phone directly.
 
@@ -266,9 +266,9 @@ q2_p <- q2_datapro %>%
 ggplotly()
 ```
 
-And picture \@ref(fig:compare1) showed us more detail information, compares the 2000 and 2017 of fixed telephone and mobile phone subscription per 100 people. We can see that in most countries the number of fixed phone basically fell sharply only less than 50, on the contrary there are quite a few people have more mobile phone at the same time. On average, most people own a mobile phone, and 100 people have an average of less than 25 landline phones.
+And picture \@ref(fig:compare1) showed us more detail information, compares the 2000 and 2017 of fixed telephone and mobile phone subscription per 100 people. We can see that in most countries the number of fixed phone basically **fell sharply**, only less than 50, on the contrary there are quite a few people have more mobile phone at the same time. On average, most people own **a mobile phone**, and 100 people have an average of **less** than 25 landline phones.
 
-And this trend did not happened recently, in 2006 @2006Cpua already said that one in five consumers who currently use wireless telephone service plan to drop their landline service, according to In-Stat. Besides, it's worth noting that Monaco has a far higher percentage of fixed-line phones than any other country, while Hong Kong has nearly 2.5 mobile phones per person.
+And this trend did not happened recently, in **2006** @2006Cpua already said that one in five consumers who currently use wireless telephone service plan to drop their landline service, according to In-Stat. Besides, it's worth noting that Monaco has a far higher percentage of fixed-line phones than any other country, while Hong Kong has nearly 2.5 mobile phones per person.
 
 
 ## What is the regression relationship between phone subscriptions and other variables?
