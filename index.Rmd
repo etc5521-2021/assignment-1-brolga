@@ -17,7 +17,7 @@ biblio-style: authoryear-comp
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center", fig.path = "Figures/")
 library(dplyr)
 library(readr)
 library(tidyverse)
@@ -30,6 +30,8 @@ library(gganimate)
 library(gifski)
 library(plotly)
 library(gridExtra)
+library(bookdown)
+library(knitr)
 ```
 
 ```{r rawData, include = FALSE}
@@ -199,6 +201,7 @@ addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "G
 ```
 (Put mouse on each country you can see the detail about country names and the mobilephone subscription 3 years growthrate of them.)
 
+From the figure \@ref(fig:q2growmap) we can see the increase of mobile phone subscriptions in recent years. In the three years from 2015 to 2017, the number of mobile phone subscriptions was not very large on average, staying at around 0. There are even countries like France, Russia and Mexico that have negative growth. On Libreria, which is up -44%, mobile subscriptions are falling fast. But it's worth noting that the number of mobile subscriptions in Somania and Burma grew by 73% over the same period.
 
 
 ### What was the proportion of the subscription of phone and landline from 2000?
@@ -219,8 +222,10 @@ q2_datapro <- q2_landpick %>%
 ```{r animasub, fig.cap= "Compare proportion of the subscription of phone and landline from 2000 to 2017"}
   proanimation <- 
   q2_datapro%>% 
-  ggplot( aes(x = landline_subs, y = mobile_subs, 
-           size = total_pop, color = continent)) +
+  ggplot( aes(x = landline_subs, 
+              y = mobile_subs, 
+           size = total_pop, 
+           color = continent)) +
   geom_point() +
   theme_bw() +
   labs(title = 'Year: {round(frame_time)}', 
@@ -237,23 +242,24 @@ animate(plot = proanimation,
 anim_save("proanimate.gif")
 ```
 
+As we can see from the animation \@ref(fig:animasub), the main trend since 2000 is that the number of fixed-line phones has been decreasing while the number of mobile phones has been increasing. European countries have more fixed-line phones, and more people still use them in the recent past. Most African countries, by contrast, rarely use landlines. This may be because people in European countries used to have landlines, so even as mobile phones became more popular, they still had a large proportion of people using them. However, African countries rarely used landline telephone from the beginning, so with the advent of mobile phone, they did not have the process of landline to mobile phone, and chose mobile phone directly.
 
 
 ```{r compare1, fig.cap= "Proportion of the subscription of phone and landline in 2000 and 2017"}
 q2_p <- q2_datapro %>%
   filter(year %in% c(2000, 2017)) %>% 
-  ggplot( aes(landline_subs, mobile_subs, 
-           size = total_pop, color = continent)) +
+  ggplot( aes(landline_subs, 
+              mobile_subs, 
+           size = total_pop, 
+           color = continent,
+           shape = entity)) +
   geom_point() +
   theme_bw()+ 
   facet_grid(~ year) +
   theme(legend.position = 'none')
 ggplotly()
 ```
-
-
-
-
+And picture \@ref(fig:compare1) showed us more detail information, compares the 2000 and 2017 of fixed telephone and mobile phone number in 100, we can see that in most countries the number of fixed phone basically fell sharply only less than 50 fixed phone in 100, on the contrary there are quite a few people have more mobile phone at the same time. It's worth noting that Monaco has a far higher percentage of fixed-line phones than any other country, while Hong Kong has nearly 2.5 mobile phones per person.
 
 
 
