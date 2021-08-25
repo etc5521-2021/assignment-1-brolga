@@ -1,29 +1,46 @@
 ---
 title: "ETC5521 Assignment 1"
-subtitle: "Your title"
+subtitle: "Analysis of global mobile and fixed telephone usage"
 team: brolga
 author:
   - Hanchen Wang 
   - Jiaying Zhang 
 date: "`r Sys.Date()`"
 output: 
-  html_document
+  bookdown::html_document2:
+    toc: yes
+    toc_float: yes
 bibliography: reference.bib
 ---
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center", fig.path = "Figures/")
 library(dplyr)
 library(readr)
 library(tidyverse)
-library(here)
+library(naniar)
+library(rgdal)
+library(leaflet)
+library(RColorBrewer)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(plotly)
+library(bookdown)
+library(knitr)
+library(kableExtra)
+library(ggResidpanel)
+library(mvtnorm)
+library(broom)
+library(janitor)
+library(gridExtra)
 ```
 
 ```{r rawData, include = FALSE}
-mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
 landline <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
+mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
 ```
 # Introduction and motivation
 
@@ -31,13 +48,13 @@ It has been 45 years since the first landline telephone was invented in 1876. Th
 
 “Digital connectivity plays a critical role in bettering lives, as it opens the door to unprecedented knowledge, employment and financial opportunities for billions of people worldwide,” said ITU Secretary-General Houlin Zhao. Because the telephone plays a crucial role in our life, we think it is valuable to analyze it.
 
-This analysis is based on information about mobile and landline phones collected by the @ITU -International Telecommunication Union and would like to analyze the phone subscription trend, percentage and other factors like the regression relationship between subscription and other factors.
+This analysis is based on information about mobile and landline phones collected by the @ITU -International Telecommunication Union and would like to analyze the phone subscription trend, percentage and other factors.
 
 Specially: 
 
 1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-2.What is the difference and occupation between phone and landline subscriptions in different countries in given year?
+2.What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
 
 3.What is the regression relationship between phone subscriptions and other variables? 
 
@@ -47,16 +64,49 @@ The datasets are downloaded from the Github repository of [Tidy Tuesday](https:/
 
 There are two datasets provided in the repository and all of them came from an article-"Technology Adoption" which written by @owidtechnologyadoption on 2017 [OurWorldInData.org](https://ourworldindata.org/technology-adoption). 
 
-## Mobilephone subscriptions vs GDP per capita  (`mobile.csv`)
-The dataset about Mobilephone subscriptions vs GDP per capita originated from an article-"Technology Adoption". This dataset was published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about mobilephone subscriptions and GPD per capita in each country from 1960 to 2017.
+@Tidy-Tuesday only made a few changes to the original data and already can get relatively clean data that can be used for analysis, mainly by matching the time of several original data, screening the data from 1990 to 2017, and adding the corresponding continent of each country.
 
+## Fixed(landline) telephone subscriptions vs GDP per capita  (`landline.csv`)
 
-Mobile cellular telephone subscriptions are subscriptions to a public mobile telephone service that provide access to the PSTN using cellular technology. The indicator includes (and is split into) the number of postpaid subscriptions, and the number of active prepaid accounts (i.e. that have been used during the last three months). The indicator applies to all mobile cellular subscriptions that offer voice communications. It excludes subscriptions via data cards or USB modems, subscriptions to public mobile data services, private trunked mobile radio, telepoint, radio paging and telemetry services.
+The dataset about Fixed(landline) telephone subscriptions vs GDP per capita also originated from "Technology Adoption". It published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about fixed telephone subscriptions and GPD per capita in each country during **1960** and **2017**.
 
-Data on mobile cellular subscribers are derived using administrative data that countries (usually the regulatory telecommunication authority or the Ministry in charge of telecommunications) regularly, and at least annually, collect from telecommunications operators.
+Fixed telephone subscriptions refers to the sum of active number of analogue fixed telephone lines, voice-over-IP (VoIP) subscriptions, fixed wireless local loop (WLL) subscriptions, ISDN voice-channel equivalents and fixed public payphones.
+
+### Structure of `landline.csv`
+This dataset has `r nrow(landline)` number of observations and `r ncol(landline)` number of variables. The name, type and description of each variable in `landline.csv` can be found in the data dictionary below.
+
+|variable                           |class     |description |
+|:----------------------------------|:---------|:-----------|
+|entity                             |character |Country         |
+|code                               |character | Country code |
+|year                               |double    | Year |
+|total_pop |double    | Gapminder total population |
+|gdp_per_cap                        |double    | GDP per capita, PPP (constant 2011 international $) |
+|landline_subs                      |double    | Fixed telephone subscriptions (per 100 people)|
+|continent                          |character | Continent |
+
+### Collection methods
+Data on fixed telephone lines are derived using administrative data that countries (usually the regulatory telecommunication authority or the Ministry in charge of telecommunications) regularly, and at least annually, collect from telecommunications operators. 
 
 Data for this indicator are readily available for approximately 90 percent of countries, either through ITU's World Telecommunication Indicators questionnaires or from official information available on the Ministry or Regulator's website. For the rest, information can be aggregated through operators' data (mainly through annual reports) and complemented by market research reports.
 
+### Data Limitation
+
+- Discrepancies between global and national figures may arise when countries use a different definition than the one used by ITU.Data are usually not adjusted but discrepancies in the definition, reference year or the break in comparability in between years are noted in a data note. For this reason, data are not always strictly comparable. Missing values are estimated by ITU.
+
+```{r missing-value1, fig.cap="Visualise the missing value in landline data", fig.align= "center"}
+landline %>%
+  vis_miss(sort_miss = TRUE)
+```
+
+- From Figure \@ref(fig:missing-value1), we can see that there are 4 variables that have missing values. Among them, there are many null values in `gdp_per_cap` and `landline_subs`, which may have come influence on the results of statistical analysis.
+- This data only covers the period from 1990 to 2017. If researchers want to keep up to date with the last few years, they need to look at other data as well.
+
+
+## Mobilephone subscriptions vs GDP per capita  (`mobile.csv`)
+The dataset about Mobilephone subscriptions vs GDP per capita originated from an article-"Technology Adoption". This dataset was published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about mobilephone subscriptions and GPD per capita in each country from **1960** to **2017**.
+
+### Structure of `mobile.csv`
 This dataset has `r nrow(mobile)` number of observations and `r ncol(mobile)` number of variables. The name, type and description of each variable in `mobile.csv` can be found in the data dictionary below.
 
 
@@ -72,37 +122,267 @@ This dataset has `r nrow(mobile)` number of observations and `r ncol(mobile)` nu
 |continent         |character | Continent |
 
 
-## Fixed(landline) telephone subscriptions vs GDP per capita  (`landline.csv`)
+Mobile cellular telephone subscriptions are subscriptions to a public mobile telephone service that provide access to the PSTN using cellular technology. The indicator includes (and is split into) the number of postpaid subscriptions, and the number of active prepaid accounts (i.e. that have been used during the last three months). The indicator applies to all mobile cellular subscriptions that offer voice communications. It excludes subscriptions via data cards or USB modems, subscriptions to public mobile data services, private trunked mobile radio, telepoint, radio paging and telemetry services.
 
-The dataset about Fixed(landline) telephone subscriptions vs GDP per capita also originated from "Technology Adoption". It published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about fixed telephone subscriptions and GPD per capita in each country during 1960 and 2017.
-
-Fixed telephone subscriptions refers to the sum of active number of analogue fixed telephone lines, voice-over-IP (VoIP) subscriptions, fixed wireless local loop (WLL) subscriptions, ISDN voice-channel equivalents and fixed public payphones.
-
-Data on fixed telephone lines are derived using administrative data that countries (usually the regulatory telecommunication authority or the Ministry in charge of telecommunications) regularly, and at least annually, collect from telecommunications operators. 
+### Collection methods
+Data on mobile cellular subscribers are derived using administrative data that countries (usually the regulatory telecommunication authority or the Ministry in charge of telecommunications) regularly, and at least annually, collect from telecommunications operators.
 
 Data for this indicator are readily available for approximately 90 percent of countries, either through ITU's World Telecommunication Indicators questionnaires or from official information available on the Ministry or Regulator's website. For the rest, information can be aggregated through operators' data (mainly through annual reports) and complemented by market research reports.
 
-This dataset has `r nrow(landline)` number of observations and `r ncol(landline)` number of variables. The name, type and description of each variable in `landline.csv` can be found in the data dictionary below.
+### Data Limitation
+- Discrepancies between global and national figures may arise when countries use a different definition than the one used by ITU. Data are usually not adjusted but discrepancies in the definition, reference year or the break in comparability in between years are noted in a data note. For this reason, data are not always strictly comparable. Missing values are estimated by ITU.
 
-|variable                           |class     |description |
-|:----------------------------------|:---------|:-----------|
-|entity                             |character |Country         |
-|code                               |character | Country code |
-|year                               |double    | Year |
-|total_pop |double    | Gapminder total population |
-|gdp_per_cap                        |double    | GDP per capita, PPP (constant 2011 international $) |
-|landline_subs                      |double    | Fixed telephone subscriptions (per 100 people)|
-|continent                          |character | Continent |
 
-# Three questions
+```{r missing-value2, fig.cap="Visualise the missing value in mobile data", fig.align= "center"}
+mobile %>%
+  vis_miss(sort_miss = TRUE)
+```
 
-*What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
-*What is the difference and occupation between phone and landline subscriptions in different countries in given year?
-*What is the regression relationship between phone subscriptions and other variables? 
+- From Figure \@ref(fig:missing-value2), we can see that there are 4 variables that have missing values. Among them, there are many null values in `gdp_per_cap` , `total_pop`and `mocile_subs`, which may have some influence on the results of statistical analysis.  
+- This data only covers the period from 1990 to 2017. If researchers want to keep up to date with the last few years, they need to look at other data as well.
+
 
 # Analysis and findings
 
-[FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
+## What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-# References
+```{r q1combinefig, fig.width=9, fig.cap="The trend of mobile phone and landline subscription by continent from 1990 to 2017"}
+q1_combine <- landline %>% 
+  select(c(entity,landline_subs, year)) %>% 
+  right_join(mobile, by = c("entity", "year")) %>% 
+  pivot_longer(cols = c(landline_subs, mobile_subs), names_to = "communication", values_to = "subs" )
 
+q1_combine_tidy <- q1_combine %>% 
+  select(-code, -gdp_per_cap) %>% 
+  na.omit() %>%
+  group_by(communication, year, continent) %>% 
+   summarise(subs = mean(subs))
+  
+
+q1_combine_fig <- q1_combine_tidy %>% 
+  ggplot(aes(x = year, y = subs, group = continent, color = continent)) + 
+  geom_line() + 
+  theme_bw() + 
+  ggtitle("The trend of mobile phone and landline subscription by continent from 1990 to 2017") +
+  facet_wrap(~communication)
+
+
+ggplotly(q1_combine_fig)
+```
+Figure \@ref(fig:q1combinefig) shows the basic trends of subscriptions of mobile phone and landline subscriptions from 1990 to 2017 by 5 continents, I combined the two datasets and use some functions like `pivot_longer()` to adjust the variables as well as plotted the line graph by `ggplotly` which turns out a better interactive data visualization, but Among them, I grouped the data according to continents rather than countries, because I want to present a clear and intuitive trend figure so that the readers can roughly understand the basic facts reflected by the two datasets. More complex issues between countries even involve GDP per capita and the explanation will be described in the following questions. 
+
+From the combined figure, we can find the the similarities and difference of trends easily, that Europe has the largest share of subscription of both devices over the 27-year period, followed by the Americas, Asia and Oceania, and Africa has the fewest subscriptions compared to other continents. As is all known, the development of communication equipment cannot be separated from the level of technological and economic development of a country or region. Europe, as the main market of landline and mobile phones in the second half of the 20th century, naturally occupied a high market share and subscription volume. Although the earliest landline machine was invented in America in Canada[1], The economic conditions and social level of the countries except USA in America  determine that the subscriptions are difficult to go beyond Europe, and Oceania is in the same way. However, in Asia and Africa, which are mainly developing countries, such conditions cause the subscription volume of both devices can only lag behind.
+
+As for the difference, Although mobile phone subscription in the five continents were virtually zero in 1990, they exploded exponentially over the next decade. In contrast, landline subscriptions remained thes high level relatively in 1990 in all regions except Africa, but the growth rate was significantly lower, and there was even a decline in Europe. Meanwhile, Africa has remained roughly at the bottom. Overall, landline subscriptions in all regions have remained slow or stagnant for 17 years. the interesting findings can refelect that mobile communication equipment is gradually replacing the traditional landline communication equipment. And such an inevitable trend also reflects the rapid development of human communication technology in the past 20 years.[2]
+
+
+
+## What is the regression relationship between phone subscriptions and other variables?
+
+The penetration rate of mobile phone devices can be expressed as the number of people who use mobile phones, so to speak, because of the need for work, study or entertainment, every person now has at least one mobile phone number. However, I often heard from my parents that in their time, it was impossible to own a mobile phone or a mobile phone number. After all, it would cost nearly half a year salary to buy a mobile phone in China 20 years ago, not to mention the monthly subscription fee, sp landline was the main communication device for every family at that time. According to the first question, we found that the penetration rate of mobile phones has been increasing year by year, so it is meaningful to look at what factors are related to mobile phone subscriptions, and find out the regression relationship with those factors. I believed the mobile phone subscription has the strong relationship with year as well as GDP per capita. And I decided to use the fitting model function in R language to make the fitting model of each country according to the data and work out whether the regression relationship is applicable or not, and how the two factors affect the subscription.
+
+```{r}
+#Fit a linear model to each one
+q3_year_gap <- mobile %>% mutate(year1990 = year - 1990)
+
+#nest the large data
+q3_by_entity <- q3_year_gap %>% 
+  na.omit() %>%
+  select(entity, year1990, mobile_subs, gdp_per_cap, continent, year) %>%
+  group_by(entity, continent) %>%
+  nest()
+
+#Map inside the data
+q3_entity_model <- q3_by_entity %>% 
+  mutate(model = map(data, ~lm(mobile_subs ~ gdp_per_cap + year1990, data = .)
+                     )
+         ) 
+
+#Data Wrangle and tidy
+q3_entity_coefs <- q3_entity_model %>%
+  mutate(tidy = map(model, tidy)) %>%
+  unnest(tidy) %>%
+  select(entity, continent, term, estimate)
+
+
+q3_tidy_entity_coefs <- q3_entity_coefs %>%
+  pivot_wider(id_cols = c(term, entity, continent), 
+              names_from =  term,
+              values_from = estimate) %>%
+  rename(intercept = `(Intercept)`)
+
+
+```
+
+```{r}
+#display the augment and other paraments
+q3_entity_aug <- q3_entity_model %>% 
+  mutate(augmented = map(model, augment)) %>%
+  unnest(augmented)
+
+q3_entity_glance <- q3_entity_model %>% 
+  mutate(glanced = map(model, glance)) %>%
+  unnest(glanced)
+```
+
+
+### What is the regression relationship between phone subscriptions and year?
+ 
+* Fitted model plot
+```{r q3yearfitfig, fig.width=9, fig.cap="The fitted relationship of mobile phone subscription with year gap from 1990 to 2017"}
+###Plot the model of year 
+ q3_year_fit_fig <- q3_entity_aug %>% ggplot() + 
+  geom_line(aes(x = year1990, 
+                y = .fitted, 
+                group = entity, 
+                color = continent), 
+            alpha = 1/3) +
+  xlab("Year from 1990") + 
+  ylab("Fitted value of mobile phone subscription") +
+  theme_bw() + 
+  scale_x_continuous(breaks=seq(0, 23, 2)) +
+  ggtitle("Fitted models for year gap") 
+
+ggplotly(q3_year_fit_fig)
+```
+
+Firstly, I fitted a linear model and added the quadratic term: `mobile_subs ~ year1990 + gdp_per_cap`, which year1990 can be regarded as the difference between each year and 1990. In this case, this year gap becomes a value from 1 to 27 with 1990 as the base year, which can better judge the participation of the "year" variable in the model. Since I wanted to make a fitting model for each city, I had to use the `nest()` function and `map` function to fit `lm` to all countries and map the function to data column of tidy data, and use `augment()` to plot all the models, which is indeed a complicated process. 
+
+As shown in Figure \@ref(fig:q3yearfitfig), the displayed effect looks very complicated, but it can still be found that under such a model, the diagram of the fitting relationship between mobile phone subscriptions and year gap in each country is very similar to the trend graph of mobile phone subscriptions in question 1. Seems each model of country is not straight line, which can be explained that another factor, GDP per caita, does participate the fitted model, which surely have influence on the fitting participation of the year. Interestingly, Macao and Hong Kong as the Asian regions, has a higher fitted value in 2017.According to the data available, it is true that these two regions have very high subscriptions in recent years, but does this mean that they have a fitting model with a larger slope? Similarly, another Asian country, Myanmar has a lowest fitted value in 2017, so does it has a smaller slope?
+
+
+
+
+* Scatter plot of slopes and intercepts
+
+```{r q3yearcoefsfig, fig.width=9, fig.cap="The fitted relationship of mobile phone subscription with year gap from 1990 to 2017"}
+q3_year_coefs_fig <- ggplot(q3_tidy_entity_coefs, 
+            aes(x = intercept, 
+                y = year1990, 
+                colour = continent, 
+                label = entity)) +
+  geom_point(alpha = 0.5, 
+             size = 2) +
+  ylab("Slope of year") +
+  scale_color_brewer(palette = "Dark2")
+
+ggplotly(q3_year_coefs_fig)
+```
+To check the slope and intercept of the model for each country, I use the `augment()`to plot all the models. As shown in Figure \@ref(fig:q3yearcoefsfig), it demonstrates the intercept and year slope of the model of each country. For example, the tidy model of Australia is as following:
+$$\widehat{mobile-subs} = -274.173053 - 1.2974~year1990 + 29.3258~gdp-per-cap$$ 
+And I got some interesting findings:  
+
+- Generally more than more than two-thirds of countries has a positive slope, which means most countries tends to have a constant increase in subscriptions.  
+
+- There is a difference across the continents: Countries in Europe and Oceania tended to start with more positive slope, which means positive increasing rate of subscription; countries in Asia tended to start lower but have high rates of improvement; Africa tends to start lower and have a huge range in rate of change and most countries who has negative growth.  
+
+- Sure enough, Macao and Hongkong has the higher slope relatively as well as Myanmar had the lower slope.  
+
+- Seems most countries had negative intercept, which was supposed to the two possible reasons, one is that all the countries did have nearly zero mobile phone subscription in 1990, second is that the model was affected by the another factor: GDP per capital.
+
+For example, the tidy model of Australia is as following:
+$$\widehat{mobile-subs} = -274.173053 - 1.2974~year1990 + 29.3258~gdp-per-cap$$
+
+### What is the regression relationship between phone subscriptions and GDP per capita?
+
+* Fitted model plot
+
+
+```{r q3gdplmfig, fig.width=12, fig.height=12, fig.cap="q3_gdp_lm_fig"}
+#GDP per caita fitted model
+
+q3_gdp_lm_fig <- ggplot(data = q3_year_gap, aes(x = gdp_per_cap, y = mobile_subs, color = continent)) +
+ geom_point(size = 0.2) +
+ geom_smooth(method = "lm", se = FALSE, level = 0.95, size = 0.9) + facet_wrap(~year, 7) + 
+  theme_bw() + 
+  xlab("GDP per capita") + 
+  ylab("Mobile phone subscription") 
+
+
+
+ggplotly(q3_gdp_lm_fig , width = 800,
+  height = 500)
+```
+Finally, let us focus on the figure of model for GDP per capita. This time, in order to avoid the interference of the year on the model graphs, I decided to use `facet_wrap(~year)` to separate each graph. As shown in Figure \@ref(fig:q3gdplmfig), the relationship between per capita GDP and subscriptions in this model can be intuitively reflected. It is not difficult to find that the slope of each continent between 1990 and 1997 was almost zero, but then all maintained a positive slope, which shows that per capita GDP and subscription volume have maintained a positive correlation after 1997. Considering the background of the times, this result is well understood. GDP per capita can be understood as the purchasing power of individuals. Often people with higher purchasing power can afford high-tech products. In the last century, Europe, as a typical high-income region, naturally had a higher GDP per capita and therefore a higher telephone subscription volume, which in turn had a greater growth rate than other regions. 
+
+
+But then Europe maintained a relatively high slope growth rate until 2007, and its slope was overtaken by Asia, and then the growth rate declined slowly until 2017. This also reflects that with the change of the times and the development of global technology, the cost of mobile phone products has become cheaper and more accessible to the people. It can even be said that people in low-income countries also need mobile phones, but they often do not need additional mobile phones. The number of subscriptions is essentially affected by additional mobile phone accounts and call charges. We can only show that maybe low-income countries are not like other high-income countries, it is difficult to afford additional subscriptions.
+
+However, regarding the gradual growth of Asia, I think it has something to do with the level of national technological development. We must know that China and Japan, as representatives of Asia, have a huge population market, which determines the rapid development of mobile phone manufacturing and service industries. In order to ensure small profits but quick turnover, many technology companies are willing to produce cheaper mobile phone products and more affordable costs. Services to attract consumers. Moreover, even though a mobile phone or an additional mobile phone number is no longer a symbol of identity and status at this stage, countries with higher GDP per capita will still enjoy this kind of capital accumulation, and thus achieve rapid growth in mobile phone subscriptions.
+
+
+
+* Scatter plot of slopes and intercepts
+
+```{r q3gdpcoefsfig, fig.width=9, fig.cap="The fitted relationship of mobile phone subscription with year gap from 1990 to 2017"}
+q3_gdp_coefs_fig <- ggplot(q3_tidy_entity_coefs, 
+            aes(x = intercept, 
+                y = gdp_per_cap, 
+                colour = continent, 
+                label = entity)) +
+  geom_point(alpha = 0.5, 
+             size = 2) + 
+  ylab("Slope of GDP per capita") +
+  scale_color_brewer(palette = "Dark2")
+
+ggplotly(q3_gdp_coefs_fig)
+```
+The \@ref(fig:q3gdplmfig) shows the coefficient of the model for per capita GDP and subscription. We can find most countries in Africa has the higher slope and negtive intercept, that is because the economic development of many African countries is relatively slow and unbalanced. In the initial stage, the range of mobile phone subscriptions remains at a very low level, but there are still countries with high per capita GDP such as Cape Town that can achieve high mobile phone penetration. This huge drop deepens the range of the slope. At the same time, with the rapid development of many countries now, the per capita GDP growth has also accelerated the growth of mobile phone subscriptions to a large extent.
+
+
+### The applicability of the fitted model
+
+* The degree of fitting
+```{r q3entityglancetidytab}
+
+q3_entity_glance_tidy <- q3_entity_glance %>% 
+  select(entity, continent, adj.r.squared, r.squared, AIC, BIC) %>% 
+  filter(AIC != -Inf, BIC != -Inf)
+
+q3_entity_glance_tidy_tab <- q3_entity_glance_tidy %>%
+  group_by(continent) %>% 
+  summarise(r.squared = mean(r.squared), 
+            adj.r.squared = mean(adj.r.squared), 
+            AIC =mean(AIC), 
+            BIC = mean(BIC)) %>% 
+  kable(caption = "Measures of Goodness of Fit")%>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+q3_entity_glance_tidy_tab
+```
+Lastly, let us have a look at the compatibility of the model, from the Table \@ref(tab:q3entityglancetidytab) which was used `glance()` from the previous fitted model to check, we can tell the r.squared is higher relatively and AIC as well as BIC keep the high level. Therefore, we can not deny it is a good model.
+
+
+* Inapplicable entities
+
+```{r entityfit, fig.cap="The inapplicable situation"}
+ggplot(q3_entity_glance_tidy, 
+       aes(x = r.squared)) + 
+  geom_histogram()
+```
+
+
+
+
+
+```{r q3badfit, fig.cap="The inapplicable entities"}
+q3_badfit <- q3_entity_glance_tidy %>% filter(r.squared <= 0.65)
+
+q3_gap_bad <- q3_year_gap %>% filter(entity %in% q3_badfit$entity)
+
+q3_bad_fit <-
+ggplot(data = q3_gap_bad, 
+       aes(x = year,         
+           y = mobile_subs)) + 
+         geom_point(aes(color = entity)) +
+  facet_wrap(~entity) + 
+  ylab("Mobile phone subscription") +
+  scale_x_continuous(breaks = seq(1990,2017,4)) +
+
+  geom_smooth(method = "lm", 
+              se = FALSE)
+
+
+ggplotly(q3_bad_fit )
+```
+Now let us Examine the countries with the worst fit by plotting the $R^2$ values as a histogram fig \@ref(fig:entityfit), after filtering the countries with $R^2<0.65$, then make scatterplots of the data, with the linear model overlaid. From the fig \@ref(fig:q3badfit), we can find there are only four countries can not be explained by the fitted model. HOnestly, all of the countries have the similar trends in mobile phone subscription, that they maintained almost 0 level from 1990 to 2006 and then soared dramatically. Actually, I do believe it can be blamed on the incompetence of the dataset and maybe there was no accurate records on the mobile phone subscriptions in 15 years ago.
