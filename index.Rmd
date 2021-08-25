@@ -36,6 +36,8 @@ library(mvtnorm)
 library(broom)
 library(janitor)
 library(gridExtra)
+
+options(scipen = 200, digits = 4)
 ```
 
 ```{r rawData, include = FALSE}
@@ -386,3 +388,11 @@ ggplot(data = q3_gap_bad,
 ggplotly(q3_bad_fit )
 ```
 Now let us Examine the countries with the worst fit by plotting the $R^2$ values as a histogram fig \@ref(fig:entityfit), after filtering the countries with $R^2<0.65$, then make scatterplots of the data, with the linear model overlaid. From the fig \@ref(fig:q3badfit), we can find there are only four countries can not be explained by the fitted model. HOnestly, all of the countries have the similar trends in mobile phone subscription, that they maintained almost 0 level from 1990 to 2006 and then soared dramatically. Actually, I do believe it can be blamed on the incompetence of the dataset and maybe there was no accurate records on the mobile phone subscriptions in 15 years ago.
+
+# Acknowledge
+
+- The following packages are used to produce this report:
+naniar [@R-naniar], dplyr [@R-dplyr], readr[@R-readr], tidyverse [@R-tidyverse], rgdal [@R-rgdal], knitr [@R-knitr], leaflet [@R-leaflet], ColorBrewer [@R-RColorBrewer], ggplot2 [@R-ggplot2], gganimate [@R-gganimate], gifski [@R-gifski], plotly [@R-plotly], bookdown[@R-bookdown]
+- The background map information came from @WBD.
+
+# References
