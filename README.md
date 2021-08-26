@@ -1,11 +1,11 @@
 # ETC5521 Assignment 1 
 
-Team name: [FILL]
+Team name: [brolga]
 
 Team members:
 
-* [FILL]
-* [FILL]
+* [Hanchen Wang]
+* [Jiaying Zhang]
 
 # Steps
 
