@@ -17,7 +17,7 @@ biblio-style: authoryear-comp
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center", fig.path = "Figures/")
 library(dplyr)
 library(readr)
 library(tidyverse)
@@ -25,6 +25,12 @@ library(naniar)
 library(rgdal)
 library(leaflet)
 library(RColorBrewer)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(plotly)
+library(bookdown)
+library(knitr)
 ```
 
 ```{r rawData, include = FALSE}
@@ -43,7 +49,9 @@ Specially:
 
 1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-2.What was the growth rate of the subscription of mobile phones in each country from 2015 to 2017 and what was the proportion of the subscription of phone and landline in 2017?
+
+2.What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
+
 
 3.What is the regression relationship between phone subscriptions and other variables? 
 
@@ -135,9 +143,12 @@ mobile %>%
 
 ## What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
-## What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline in 2017?
 
-```{r q2data}
+
+## What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
+
+### What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017?
+```{r q2datagrow}
 q2_datause <- mobile%>% 
   select(entity, year, mobile_subs) %>% 
   filter(year %in% c(2015, 2017)) %>% 
@@ -151,18 +162,27 @@ pivot_wider(id_cols = entity,
   mutate(growmobilerate = (mobile2017- mobile2015)/mobile2015) %>% select(entity, growmobilerate)
 ```
 
-```{r mapdownload}
+
+
+```{r q2mapdownload}
 q2_world_spdf <- readOGR( 
   dsn= paste0(getwd(),"/DATA/world_shape_file/") , 
   layer="TM_WORLD_BORDERS_SIMPL-0.3",
   verbose=FALSE
 )
 ```
+
 ```{r mapcolor}
 mypalette <- colorNumeric( palette="viridis", domain=q2_data$growmobilerate, na.color="transparent")
 mypalette(c(45,43))
 ```
-```{r maptext}
+
+```{r q2mapcolor, include = FALSE}
+mypalette <- colorNumeric( palette="viridis", domain=q2_data$growmobilerate, na.color="transparent")
+mypalette(c(45,43))
+```
+
+```{r q2maptext}
 mytext <- paste(
     "Country: ", q2_world_spdf@data$NAME,"<br/>", 
     "Growth_rate: ", round(q2_data$growmobilerate, 2), 
@@ -170,7 +190,8 @@ mytext <- paste(
   lapply(htmltools::HTML)
 ```
 
-```{r q2map}
+
+```{r q2growmap, fig.cap= "Growth rate of the mobile subscription in each country during 2013 and 2017"}
 leaflet(q2_world_spdf) %>% 
   addTiles()  %>% 
   setView( lat=10, lng=0 , zoom=2) %>%
@@ -191,22 +212,88 @@ addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "P
 
 ```
 
-uses a geospatial object stored in a shape file available http://thematicmapping.org/downloads/world_borders.php
+(Put mouse on each country you can see the detail about country names and the mobilephone subscription 3 years growthrate of them.)
+
+From the figure \@ref(fig:q2growmap) we can see the **increase** of mobile phone subscriptions in recent years. In the three years from 2015 to 2017, the number of mobile phone subscriptions was not very large on average, staying at around 0. 
+
+There are even countries like France, Russia and Mexico that have **negative** growth rate. In three years the subscription of mobile phone in Libreria, decreased by 44%, which is extremely fast. However, it's worth noting that the number of mobile subscriptions in **Somania** and **Burma** grew by 73% over the same period.
+
+Instead of seeing a rise in the number of mobile phones in developed countries, we see a partial decline. Perhaps as mentioned by @PRC, the developed economies have already completed the popularization of mobile phones in the early stage. Now, compared with the increase in the number, the main trend is that smart phones replace ordinary mobile phones.
 
 
+### What was the proportion of the subscription of phone and landline from 2000?
+```{r q2datapro}
+q2_landpick <- landline %>% select(
+ entity, year, total_pop, landline_subs, continent)
+q2_mobilepick <- mobile  %>%  select(
+  entity, year, mobile_subs) %>%
+rename(
+mobilecountry = entity,
+mobileyear = year) 
+q2_datapro <- q2_landpick %>% 
+  left_join(
+  q2_mobilepick, by = c("entity" = "mobilecountry", "year"= "mobileyear")) %>% 
+  filter(year>1999)
+```
 
-@PRC
+```{r animasub, fig.cap= "Compare proportion of the subscription of phone and landline from 2000 to 2017"}
+  proanimation <- 
+  q2_datapro%>% 
+  ggplot( aes(x = landline_subs, 
+              y = mobile_subs, 
+           size = total_pop, 
+           color = continent)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = 'Year: {round(frame_time)}', 
+       x = 'landline subscription(per 100 people)', 
+       y = 'mobile subscription(per 100 people)') +
+  transition_time(year)+
+  ease_aes('linear')
+
+animate(plot = proanimation,
+    render = gifski_renderer(),
+    duration = 18,
+    fps = 20)
+
+anim_save("proanimate.gif")
+```
+
+As we can see from the animation \@ref(fig:animasub), the main trend since 2000 is that the number of **fixed-line** phones has been **decreasing** while the number of **mobile** phones has been **increasing**. 
+
+**European** countries have more fixed-line phones, and more people still use them recently. Most **African** countries, by contrast, rarely use landlines. 
+
+This may be because people in European countries used to have landlines, so even as mobile phones became more popular, they still had a large proportion of people using them. However, African countries rarely used landline telephone from the beginning, so with the advent of mobile phone, they did not have the process of landline to mobile phone, and chose mobile phone directly.
+
+
+```{r compare1, fig.cap= "Proportion of the subscription of phone and landline in 2000 and 2017"}
+q2_p <- q2_datapro %>%
+  filter(year %in% c(2000, 2017)) %>% 
+  ggplot( aes(landline_subs, 
+              mobile_subs, 
+           size = total_pop, 
+           color = continent,
+           shape = entity)) +
+  geom_point() +
+  theme_bw()+ 
+  facet_grid(~ year) +
+  theme(legend.position = 'none')
+ggplotly()
+```
+
+And picture \@ref(fig:compare1) showed us more detail information, compares the 2000 and 2017 of fixed telephone and mobile phone subscription per 100 people. We can see that in most countries the number of fixed phone basically **fell sharply**, only less than 50, on the contrary there are quite a few people have more mobile phone at the same time. On average, most people own **a mobile phone**, and 100 people have an average of **less** than 25 landline phones.
+
+And this trend did not happened recently, in **2006** @2006Cpua already said that one in five consumers who currently use wireless telephone service plan to drop their landline service, according to In-Stat. Besides, it's worth noting that Monaco has a far higher percentage of fixed-line phones than any other country, while Hong Kong has nearly 2.5 mobile phones per person.
+
 
 ## What is the regression relationship between phone subscriptions and other variables?
 
 
 
-
-
-[FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
+# Acknowledge
+- The following packages are used to produce this report:
+naniar [@R-naniar], dplyr [@R-dplyr], readr[@R-readr], tidyverse [@R-tidyverse], rgdal [@R-rgdal], knitr [@R-knitr], leaflet [@R-leaflet], ColorBrewer [@R-RColorBrewer], ggplot2 [@R-ggplot2], gganimate [@R-gganimate], gifski [@R-gifski], plotly [@R-plotly], bookdown[@R-bookdown]
+- The background map information came from @WBD.
 
 # References
-@R-dplyr
-@R-readr
-@R-tidyverse
-@R-naniar
+
