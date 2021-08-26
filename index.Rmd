@@ -522,6 +522,15 @@ ggplotly(q3_bad_fit )
 
 Now let us Examine the countries with the worst fit by plotting the $R^2$ values as a histogram fig \@ref(fig:entityfit), after filtering the countries with $R^2<0.65$, then make scatterplots of the data, with the linear model overlaid. From the fig \@ref(fig:q3badfit), we can find there are only four countries can not be explained by the fitted model. Honestly, all of the countries have the similar trends in mobile phone subscription, that they maintained almost 0 level from 1990 to 2006 and then soared dramatically. Actually, I do believe it can be blamed on the incompetence of the dataset and maybe there was no accurate records on the mobile phone subscriptions in 15 years ago.
 
+# Conclusion
+
+In conclusion, from the above analysis, we can see that the number of mobile phones has been growing rapidly since 1990, while the number of fixed phones has also more than that in 1990, but it shows a decline recently. 
+
+Overall, European countries still have more landlines than other regions, we guess it is because European countries have the habit of using landlines. Recently, the growth rate of mobile phones varies from country to country. Some countries are increasing rapidly, but some countries have seen negative growth. We guess recently in some countries the trend have already turn to switching from regular mobile phones to smart phones. At the same time, Monaco's significantly higher rate of fixed-line phone ownership and Hong Kong's average rate of two mobile phones per person also caught our attention. 
+
+In addition, through the analysis of if there is a relationship between per capita GDP and mobile phone ownership rate in each country, we found that the higher the per capita GDP is, the higher the growth rate of mobile phone subscription is. We also look into the trend in differnet region and guess the possible reason. 
+
+Data communication is indispensable in our daily life, so it is interesting and worthwhile to analyze and explore this data. But we still believe that if combining the current data with smartphone subscription rate , age or education level we can get more interesting findings.
 
 # Acknowledge
 
