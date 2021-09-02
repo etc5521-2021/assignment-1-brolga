@@ -206,11 +206,6 @@ q2_world_spdf <- readOGR(
 )
 ```
 
-```{r mapcolor, include = FALSE}
-mypalette <- colorNumeric( palette="viridis", domain=q2_data$growmobilerate, na.color="transparent")
-mypalette(c(45,43))
-```
-
 ```{r q2mapcolor, include = FALSE}
 mypalette <- colorNumeric( palette="viridis", domain=q2_data$growmobilerate, na.color="transparent")
 mypalette(c(45,43))
@@ -228,7 +223,7 @@ mytext <- paste(
 ```{r q2growmap, fig.cap= "Growth rate of the mobile subscription in each country during 2013 and 2017"}
 leaflet(q2_world_spdf) %>% 
   addTiles()  %>% 
-  setView( lat=10, lng=0 , zoom=2) %>%
+  setView( lat=10, lng=0 , zoom=1.5) %>%
   addPolygons( 
     fillColor = ~mypalette(q2_data$growmobilerate), 
     stroke=TRUE, 
@@ -242,7 +237,7 @@ leaflet(q2_world_spdf) %>%
       direction = "auto"
     )
   ) %>%
-addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "Population (M)", position = "bottomleft" )
+addLegend( pal=mypalette, values=q2_data$growmobilerate, opacity=0.9, title = "Growth rate(per 100 people)", position = "bottomleft" )
 
 ```
 
