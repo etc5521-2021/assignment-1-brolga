@@ -525,7 +525,7 @@ ggplotly(q3_bad_fit )
 
 According to the $R^2$ values, figure fig \@ref(fig:entityfit) will show a histogram to illustrate the information. It suggests some countries may not have a positive linear relationship between mobile phone subscriptions and GDP per capita and time factor.
 
-Additionally, constructing scatterplots with a linear fitting on those with low $R^2$ values countries (i.e. filtering the countries with $R^2<0.65$), to check if the relationship is not linear in these countries. From figure fig \@ref(fig:q3badfit), four countries are detected. For the majority of the countries, the prediction model fits acceptably well, yet the cause of incompatibility for these four countries may be due to the incompetence of the data set or inaccurate records on the mobile phone subscriptions 15 years ago or maybe other underlying factors.
+Additionally, constructing scatter plots with a linear fitting on those with low $R^2$ values countries (i.e. filtering the countries with $R^2<0.65$), to check if the relationship is not linear in these countries. From figure fig \@ref(fig:q3badfit), four countries are detected. For the majority of the countries, the prediction model fits acceptably well, yet the cause of incompatibility for these four countries may be due to the incompetence of the data set or inaccurate records on the mobile phone subscriptions 15 years ago or maybe other underlying factors.
 
 # Summary of findings  
 
