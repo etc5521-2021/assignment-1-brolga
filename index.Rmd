@@ -182,37 +182,6 @@ As for the difference, Although mobile phone subscriptions in the five continent
 
 ## What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
 
-### Overview of the average subscription of Landline and Mobile phone through out 1990-2017
-
-```{r}
-landline_new <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
-mobile_new <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
-```
-
-```{r}
-data <- landline_new %>% 
-  select(code, year, landline_subs) %>% 
-  full_join(mobile_new, by = c("code", "year")) %>% 
-  pivot_longer(cols = contains("subs"),
-               names_to = "type",
-               values_to = "subscription")
-```
-
-```{r}
-new_data <- data %>% 
-  mutate(type = recode(type, "landline_subs" = "Landline", "mobile_subs" = "Mobile")) %>% 
-  group_by(year, type) %>% 
-  summarise(mean_subscription = mean(subscription, na.rm=TRUE))
-```
-
-```{r, plot1, fig.width=9, fig.cap=" Average Landline and Mobile subscription from 1990-2017 for 100 people" }
-a <- ggplot(new_data, aes(x = year, y = mean_subscription, color = type)) + geom_point() + geom_smooth()+
-  scale_x_continuous(breaks = seq(1990, 2018, 2)) +
-  scale_y_continuous(breaks = seq(0, 100, 10)) + labs(y = "average subcription of 100 people")
-
-ggplotly(a)
-```
-
 ### What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017?
 ```{r q2datagrow}
 q2_datause <- mobile%>% 
@@ -297,7 +266,7 @@ q2_datapro <- q2_landpick %>%
 ```
 
 ```{r animasub, fig.cap= "Compare proportion of the subscription of phone and landline from 2000 to 2017"}
-  proanimation <- 
+ proanimation <- 
   q2_datapro%>% 
   ggplot( aes(x = landline_subs, 
               y = mobile_subs, 
@@ -567,6 +536,82 @@ Overall, European countries still have more landlines than other regions, we gue
 In addition, through the analysis of if there is a relationship between per capita GDP and mobile phone ownership rate in each country, we found that the higher the per capita GDP is, the higher the growth rate of mobile phone subscription is. We also look into the trend in different regions and guess the possible reason. 
 
 Data communication is indispensable in our daily life, so it is interesting and worthwhile to analyze and explore this data. But we still believe that if combining the current data with smartphone subscription rate, age or education level we can get more interesting findings.
+
+# How communication changes through out 1990 to 2017 
+
+```{r}
+landline_new <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
+mobile_new <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
+```
+
+```{r}
+data <- landline_new %>% 
+  select(code, year, landline_subs, continent) %>% 
+  full_join(mobile_new, by = c("code", "year", "continent")) %>% 
+  pivot_longer(cols = contains("subs"),
+               names_to = "type",
+               values_to = "subscription")
+```
+
+```{r}
+new_data <- data %>% 
+  mutate(type = recode(type, "landline_subs" = "Landline", "mobile_subs" = "Mobile")) %>% 
+  group_by(year, type) %>% 
+  summarise(mean_subscription = mean(subscription, na.rm=TRUE))
+```
+
+```{r, plot1, fig.width=9, fig.cap=" Average Landline and Mobile subscription from 1990-2017 for 100 people" }
+a <- ggplot(new_data, aes(x = year, y = mean_subscription, color = type)) + geom_point() + geom_smooth()+
+  scale_x_continuous(breaks = seq(1990, 2018, 2)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) + labs(y = "average subcription of 100 people")
+
+ggplotly(a)
+```
+
+## Comparison between Europe and Africa 
+
+```{r}
+gdp <- data %>% 
+  group_by(continent) %>% 
+  summarise(average_gdp = mean(gdp_per_cap, na.rm = TRUE))
+
+knitr::kable(gdp, format.args = list(big.mark = ","), caption = "Average GDP per capita on each continent")
+```
+
+
+```{r}
+europe <- data %>% 
+  filter(continent == "Europe") %>% 
+  mutate(type = recode(type, "landline_subs" = "Landline", "mobile_subs" = "Mobile")) %>% 
+  group_by(year, type) %>% 
+  summarise(mean_subscription = mean(subscription, na.rm=TRUE))
+```
+
+```{r}
+ b <- ggplot(europe, aes(x = year, y = mean_subscription, color = type)) + geom_point() + geom_smooth()+
+  scale_x_continuous(breaks = seq(1990, 2018, 2)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) + labs(y = "average subcription of 100 people")
+```
+
+```{r}
+africa<- data %>% 
+  filter(continent == "Africa") %>% 
+  mutate(type = recode(type, "landline_subs" = "Landline", "mobile_subs" = "Mobile")) %>% 
+  group_by(year, type) %>% 
+  summarise(mean_subscription = mean(subscription, na.rm=TRUE))
+```
+
+```{r}
+ggplot(africa, aes(x = year, y = mean_subscription, color = type)) + geom_point() + geom_smooth()+
+  scale_x_continuous(breaks = seq(1990, 2018, 2)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) + labs(y = "average subcription of 100 people") 
+```
+
+
+```{r, width = 10}
+grid.arrange(b, c) 
+```
+
 
 
 # Acknowledge
