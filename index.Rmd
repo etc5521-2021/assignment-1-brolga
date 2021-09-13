@@ -179,6 +179,7 @@ From the combined figure, we can find the similarities and differences of trends
 
 As for the difference, Although mobile phone subscriptions in the five continents were virtually zero in 1990, they exploded exponentially over the next decade. In contrast, landline subscriptions remained at this high level relatively in 1990 in all regions except Africa, but the growth rate was significantly lower, and there was even a decline in Europe. Meanwhile, Africa has remained roughly at the bottom. Overall, landline subscriptions in all regions have remained slow or stagnant for 17 years. the interesting findings can reflect that mobile communication equipment is gradually replacing the traditional landline communication equipment. And such an inevitable trend also reflects the rapid development of human communication technology in the past 20 years.
 
+## What was the average subscription of Landline and Mobile phone through out 1990-2017
 
 ## What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
 
