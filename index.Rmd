@@ -5,6 +5,8 @@ team: brolga
 author:
   - Hanchen Wang 
   - Jiaying Zhang 
+  - Ziyao Wang (Billy)
+  - Arthur Andersen Widjaya
 date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
@@ -36,6 +38,7 @@ library(ggResidpanel)
 library(broom)
 library(janitor)
 library(gridExtra)
+library(GGally)
 options(scipen = 200, digits = 4)
 ```
 
@@ -145,7 +148,8 @@ mobile %>%
 - This data only covers the period from 1990 to 2017. If researchers want to keep up to date with the last few years, they need to look at other data as well.
 
 
-# Analysis and findings
+# Data Analysis (EDA) - 1
+
 
 ## What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
 
@@ -527,7 +531,7 @@ According to the $R^2$ values, figure fig \@ref(fig:entityfit) will show a histo
 
 Additionally, constructing scatter plots with a linear fitting on those with low $R^2$ values countries (i.e. filtering the countries with $R^2<0.65$), to check if the relationship is not linear in these countries. From figure fig \@ref(fig:q3badfit), four countries are detected. For the majority of the countries, the prediction model fits acceptably well, yet the cause of incompatibility for these four countries may be due to the incompetence of the data set or inaccurate records on the mobile phone subscriptions 15 years ago or maybe other underlying factors.
 
-# Summary of findings  
+## Summary of findings  
 
 In conclusion, from the above analysis, we can see that the number of mobile phones has been growing rapidly since 1990, while the number of fixed phones has also more than that in 1990, but it shows a decline recently. 
 
@@ -538,12 +542,161 @@ In addition, through the analysis of if there is a relationship between per capi
 Data communication is indispensable in our daily life, so it is interesting and worthwhile to analyze and explore this data. But we still believe that if combining the current data with smartphone subscription rate, age or education level we can get more interesting findings.
 
 
+# Data Analysis (EDA) - 2
+
+!!! Need adjustments on the original introduction section!!!
+
+
+## New additional research questions:  
+ 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
+ 2. What factors that may have influences on the change of mobile phone subscriptions?  
+
+## Discovery of any possible relationship between mobile phone subscriptions and provided factors.
+
+The two main interests points for constructing the possible fitting model are the variations of mobile phone subscriptions and land-line/telephone subscriptions.
+
+```{r}
+comb_new <- landline %>% 
+  select(c(entity,landline_subs, year)) %>% 
+  right_join(mobile, by = c("entity", "year")) %>% 
+  mutate(year1990 = year - 1990) %>% 
+  select(entity, year1990, landline_subs, mobile_subs, total_pop, gdp_per_cap, continent) %>% 
+  drop_na(c(mobile_subs, landline_subs))
+
+# miss_var_summary(comb_new)
+
+```
+
+
+### Obtaining a scatter plot matrix to see if any associations between both mobile phone and telephone subscription and other variables.
+
+```{r pairplot, out.width=80%, fig.cap="Scatter plot matrix", message=FALSE, warning=FALSE, echo=FALSE}
+pair_plot <- comb_new %>% 
+  ggpairs(columns = 2:6,
+          title = "Pair Matrix for variables")
+pair_plot
+```
+
+From this matrix \@ref(fig:pairplot), there are observations:
+
+ - For `mobile phone subscription`, it shows the variation in mobile phone subscription has a relatively strong correlation with the "year1999" variable and a moderate positive correlation with "GDP_per_capita".  
+ 
+ - For `landline subscription`, it suggests the variation of landline subscription has a moderate positive correlation with GDP_per_capita. Interestingly, although, the variable total_population has a very weak negative correlation with landline subscription's variation, yet it is suggested as a significant factor.  
+
+ - **_Correlation is not a causation!_**
+
+### Test to fit the linear regression and Local regression models on scatter plots for each continent
+
+> The parametric regression method - use of `lm`.
+
+Firstly, it will pick the variable that has the greatest association (i.e. the highest correlation) relative to mobile phone subscription or landline subscription.
+
+ - Fitting the linear regression for mobile phone subscription using the "year1990" variable.  
+ - Fitting the linear regression for landline subscription using the "gdp_per_cap" variable.
+ 
+```{r testplot-mobile, fig.cap="Fitting linear regression for mobile phone subsripitions in each  continent"}
+mob_test <- comb_new %>% 
+  ggplot(aes(x = year1990, y = mobile_subs))+
+  geom_point()+
+  geom_smooth(method = "lm", se = F)+
+  facet_wrap(~ continent, scales = 'free')+
+  theme_bw()
+ggplotly(mob_test)
+```
+
+From these plots \@ref(fig:testplot-mobile), it illustrates the "year" variable has a certain level of effect on explaining the variation in mobile subscription, yet there are more or less non-linear patterns in the figure. This may indicate the need for additional information to obtain a better regression model. 
+
+Furthermore, besides the "year" variable, the "gdp per capita" also is an important factor for changes in mobile subscription in this data. Thus, here has constructed a linear regression model for `mobile phone subscription`:
+
+> $$\widehat{mobile-subs} = -33.5686 + 4.8791~year1990 + 0.0009~gdp-per-cap$$ 
+
+
+Below is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_mob)$r.squared`, which suggests that around 72.74% of the variation in mobile phone subscription can be explained using variables "year 1990" and "gdp_per_cap".
+
+The possible inference example: in the same year after 1990, the change in GDP per capita for one unit will have a positive correlation on a variation on mobile phone subscription rate by 0.0009 on average. 
+
+**However**, this linear regression model has an obvious error, which is a great value of negative intercept. The intercept suggests the mobile phone subscription rate will turn positive after 1997, yet before that, the subscription rate will be negative value even with consideration of the effect of "year1990" and "gdp_per_cap". Therefore, the linear regression model is not suitable for predicting or making insightful inferences on mobile phone subscription rate's variation, with no additional information.
+
+
+
+```{r fitmob}
+fit_mob <- lm(mobile_subs ~ year1990 + gdp_per_cap, data = comb_new)
+tidy(fit_mob)
+glance(fit_mob)
+```
+
+```{r testplot-landline, fig.cap="Fitting linear regression for telephone subsripitions in each continent"}
+land_test <- comb_new %>% 
+  ggplot(aes(x = gdp_per_cap, y = landline_subs))+
+  geom_point()+
+  geom_smooth(method = "lm", se = F)+
+  facet_wrap(~ continent, scales = 'free')+
+  theme_bw()
+ggplotly(land_test)
+```
+
+
+Figure \@ref(fig:testplot-landline) illustrates the "gdp_poer_cap" variable may not be a major factor that can help to explain the variation in the landline subscription rate. Only two out of five continents are appearing in a seeming linear relationship. Linking back to `EDA - 1`, it confirms that in some of the continents, the associations between variables and landline subscription rate may not appear as linear. This suggests the need for additional information to obtain a better regression model. 
+
+
+Meanwhile, the other three variables provided in the data set are also important factors in explaining the variation of landline subscriptions. Thus, here has constructed a linear regression model for `land-line subscription`:
+
+> $$\widehat{mobile-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobile_subs - 0.6326~year1990$$ 
+
+
+Below is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_land)$r.squared`, which suggests that around 50.06% of the variation in mobile phone subscription can be explained using variables "total_pop", "gdp_per_cap", "year 1990" and "mobile_subs".
+
+
+This linear model contains all the significant variables to explain the variation of landline subscription, yet the statistics suggest these may not be the suitable ones. Moreover, these estimate coefficients of each variable in the model are very small. Although, the p-value suggests the all are the important factors yet the effect and help on explaining and predicting the changes in landline subscription is limited or minor. Hence, understanding the variation of landline subscription rate requires additional relevant information and for constructing a possible prediction model.
+
+```{r fitland}
+fit_land <- lm(landline_subs ~ gdp_per_cap + total_pop + mobile_subs + year1990, data = comb_new)
+
+tidy(fit_land)
+glance(fit_land)
+```
+
+> The non-parametric regression method - use of `LOESS`.
+
+After the attempt of fitting linear regressions for both `mobile phone subscription` and `land-line subscription`, it suggests this approach may not be the best way in terms of understanding the variation of both target variables. Thus, the non-parametric approach may shine some light on the issue.
+
+```{r}
+
+```
+
+
+"?? 首先用linear还有LOESS来判断可以用linear。
+然后尝试要不要把continent加入到linear model里面去，因为不同continent的 mobile phone subscriptions 不同。??"
+
+!!! Use of conditioning plots (Coplots)? for time factor (i.e. with in the same year? link it to the new question 1)
+
+### Diagnostics on the linear fitting model
+
+Use of `resid_panel`
+
+
+## Summary of findings 
+
+
+
+
+
+
+
+# Conclusion
+
+
+
+
+
 # Acknowledge
 
 - The following packages are used to produce this report:
 naniar [@R-naniar], dplyr [@R-dplyr], readr[@R-readr], tidyverse [@R-tidyverse], rgdal [@R-rgdal], knitr [@R-knitr], leaflet [@R-leaflet], ColorBrewer [@R-RColorBrewer], ggplot2 [@R-ggplot2], gganimate [@R-gganimate], gifski [@R-gifski], plotly [@R-plotly], bookdown[@R-bookdown], kableExtra [@R-kableExtra], ggResidpane [@R-ggResidpane], broom [@R-broom], janitor [@R-janitor], gridExtra [@R-gridExtra].
 
 - The background map information came from @WBD.
+
+
 
 # References
 
