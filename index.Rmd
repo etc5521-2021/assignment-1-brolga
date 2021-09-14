@@ -548,8 +548,8 @@ Data communication is indispensable in our daily life, so it is interesting and 
 
 
 ## New additional research questions:  
- 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
- 2. What factors that may have influences on the change of mobile phone subscriptions?  
+> 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
+  2. What factors that may have influences on the change of mobile phone subscriptions?  
 
 ## Discovery of any possible relationship between mobile phone subscriptions and provided factors.
 
@@ -570,7 +570,7 @@ comb_new <- landline %>%
 
 ### Obtaining a scatter plot matrix to see if any associations between both mobile phone and telephone subscription and other variables.
 
-```{r pairplot, out.width=80%, fig.cap="Scatter plot matrix", message=FALSE, warning=FALSE, echo=FALSE}
+```{r pairplot, out.width="80%", fig.cap="Scatter plot matrix", message=FALSE, warning=FALSE, echo=FALSE}
 pair_plot <- comb_new %>% 
   ggpairs(columns = 2:6,
           title = "Pair Matrix for variables")
@@ -581,7 +581,7 @@ From this matrix \@ref(fig:pairplot), there are observations:
 
  - For `mobile phone subscription`, it shows the variation in mobile phone subscription has a relatively strong correlation with the "year1999" variable and a moderate positive correlation with "GDP_per_capita".  
  
- - For `landline subscription`, it suggests the variation of landline subscription has a moderate positive correlation with GDP_per_capita. Interestingly, although, the variable total_population has a very weak negative correlation with landline subscription's variation, yet it is suggested as a significant factor.  
+ - For `landline subscription`, it suggests the variation of landline subscription has a moderate positive correlation with "gdp_per_capita". Interestingly, although, the variable "total_population" has a very weak negative correlation with landline subscription's variation, yet it is suggested as a significant factor.  
 
  - **_Correlation is not a causation!_**
 
@@ -608,14 +608,7 @@ From these plots \@ref(fig:testplot-mobile), it illustrates the "year" variable 
 
 Furthermore, besides the "year" variable, the "gdp per capita" also is an important factor for changes in mobile subscription in this data. Thus, here has constructed a linear regression model for `mobile phone subscription`:
 
-> $$\widehat{mobile-subs} = -33.5686 + 4.8791~year1990 + 0.0009~gdp-per-cap$$ 
-
-
-Below is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_mob)$r.squared`, which suggests that around 72.74% of the variation in mobile phone subscription can be explained using variables "year 1990" and "gdp_per_cap".
-
-The possible inference example: in the same year after 1990, the change in GDP per capita for one unit will have a positive correlation on a variation on mobile phone subscription rate by 0.0009 on average. 
-
-**However**, this linear regression model has an obvious error, which is a great value of negative intercept. The intercept suggests the mobile phone subscription rate will turn positive after 1997, yet before that, the subscription rate will be negative value even with consideration of the effect of "year1990" and "gdp_per_cap". Therefore, the linear regression model is not suitable for predicting or making insightful inferences on mobile phone subscription rate's variation, with no additional information.
+ $$\widehat{mobile-subs} = -33.5686 + 4.8791~year1990 + 0.0009~gdp-per-cap$$ 
 
 
 
@@ -624,6 +617,14 @@ fit_mob <- lm(mobile_subs ~ year1990 + gdp_per_cap, data = comb_new)
 tidy(fit_mob)
 glance(fit_mob)
 ```
+
+Above is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_mob)$r.squared`, which suggests that around 72.74% of the variation in mobile phone subscription can be explained using variables "year 1990" and "gdp_per_cap".
+
+The possible inference example: in the same year after 1990, the change in GDP per capita for one unit will have a positive correlation on a variation on mobile phone subscription rate by 0.0009 on average. 
+
+**However**, this linear regression model has an obvious error, which is a great value of negative intercept. The intercept suggests the mobile phone subscription rate will turn positive after 1997, yet before that, the subscription rate will be negative value even with consideration of the effect of "year1990" and "gdp_per_cap". Therefore, the linear regression model is not suitable for predicting or making insightful inferences on mobile phone subscription rate's variation, with no additional information.
+
+
 
 ```{r testplot-landline, fig.cap="Fitting linear regression for telephone subsripitions in each continent"}
 land_test <- comb_new %>% 
@@ -641,13 +642,9 @@ Figure \@ref(fig:testplot-landline) illustrates the "gdp_poer_cap" variable may 
 
 Meanwhile, the other three variables provided in the data set are also important factors in explaining the variation of landline subscriptions. Thus, here has constructed a linear regression model for `land-line subscription`:
 
-> $$\widehat{mobile-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobile_subs - 0.6326~year1990$$ 
+ $$\widehat{mobile-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobile_subs - 0.6326~year1990$$ 
 
-
-Below is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_land)$r.squared`, which suggests that around 50.06% of the variation in mobile phone subscription can be explained using variables "total_pop", "gdp_per_cap", "year 1990" and "mobile_subs".
-
-
-This linear model contains all the significant variables to explain the variation of landline subscription, yet the statistics suggest these may not be the suitable ones. Moreover, these estimate coefficients of each variable in the model are very small. Although, the p-value suggests the all are the important factors yet the effect and help on explaining and predicting the changes in landline subscription is limited or minor. Hence, understanding the variation of landline subscription rate requires additional relevant information and for constructing a possible prediction model.
+_(Note: Variable "total_pop"'s effect in this model is too small to show, hence hidden for presentation.)_
 
 ```{r fitland}
 fit_land <- lm(landline_subs ~ gdp_per_cap + total_pop + mobile_subs + year1990, data = comb_new)
@@ -655,6 +652,14 @@ fit_land <- lm(landline_subs ~ gdp_per_cap + total_pop + mobile_subs + year1990,
 tidy(fit_land)
 glance(fit_land)
 ```
+
+Above is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_land)$r.squared`, which suggests that around 50.06% of the variation in mobile phone subscription can be explained using variables "total_pop", "gdp_per_cap", "year 1990" and "mobile_subs".
+
+
+This linear model contains all the significant variables to explain the variation of landline subscription, yet the statistics suggest these may not be the suitable ones. Moreover, these estimate coefficients of each variable in the model are very small. Although, the p-value suggests the all are the important factors yet the effect and help on explaining and predicting the changes in landline subscription is limited or minor. Hence, understanding the variation of landline subscription rate requires additional relevant information and for constructing a possible prediction model.
+
+
+
 
 > The non-parametric regression method - use of `LOESS`.
 
