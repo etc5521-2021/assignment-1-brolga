@@ -170,7 +170,7 @@ q1_combine_fig <- q1_combine_tidy %>%
   geom_line() + 
   theme_bw() + 
   ggtitle("The trend of mobile phone and landline subscription by continent from 1990 to 2017") +
-  facet_wrap(~communication)
+  facet_wrap(~communication) + title(ylab = "subscription")
 
 
 ggplotly(q1_combine_fig)
@@ -309,7 +309,7 @@ q2_p <- q2_datapro %>%
   geom_point() +
   theme_bw()+ 
   facet_grid(~ year) +
-  theme(legend.position = 'none')
+  theme(legend.position = 'none') + title(xlab = "Landline subcription", ylab = "Mobile subscription")
 ggplotly()
 ```
 
