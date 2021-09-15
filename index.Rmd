@@ -1,5 +1,5 @@
 ---
-title: "ETC5521 Assignment 1"
+title: "ETC5521 Assignment 1 & 2"
 subtitle: "Analysis of global mobile and fixed telephone usage"
 team: brolga
 author:
@@ -551,7 +551,7 @@ Data communication is indispensable in our daily life, so it is interesting and 
 > 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
   2. What factors that may have influences on the change of mobile phone subscriptions?  
 
-## Discovery of any possible relationship between mobile phone subscriptions and provided factors.
+## Model Formation - `mobile subscriptions rate` & `land-line subscriptions rate`.
 
 The two main interests points for constructing the possible fitting model are the variations of mobile phone subscriptions and land-line/telephone subscriptions.
 
@@ -568,7 +568,9 @@ comb_new <- landline %>%
 ```
 
 
-### Obtaining a scatter plot matrix to see if any associations between both mobile phone and telephone subscription and other variables.
+### A scatter Plot Matrix
+
+The scatter plot matrix will test if any associations between both mobile phone and telephone subscription and other variables.
 
 ```{r pairplot, out.width="80%", fig.cap="Scatter plot matrix", message=FALSE, warning=FALSE, echo=FALSE}
 pair_plot <- comb_new %>% 
@@ -585,7 +587,7 @@ From this matrix \@ref(fig:pairplot), there are observations:
 
  - **_Correlation is not a causation!_**
 
-### Test to fit the linear regression and Local regression models on scatter plots for each continent
+### Attempt to fit the linear regression and Local regression models
 
 > The parametric regression method - use of `lm`.
 
@@ -600,7 +602,8 @@ mob_test <- comb_new %>%
   geom_point()+
   geom_smooth(method = "lm", se = F)+
   facet_wrap(~ continent, scales = 'free')+
-  theme_bw()
+  theme_bw()+
+  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")
 ggplotly(mob_test)
 ```
 
@@ -625,6 +628,19 @@ The possible inference example: in the same year after 1990, the change in GDP p
 **However**, this linear regression model has an obvious error, which is a great value of negative intercept. The intercept suggests the mobile phone subscription rate will turn positive after 1997, yet before that, the subscription rate will be negative value even with consideration of the effect of "year1990" and "gdp_per_cap". Therefore, the linear regression model is not suitable for predicting or making insightful inferences on mobile phone subscription rate's variation, with no additional information.
 
 
+> Diagnostics on this linear model - `mobile phone subscription rate`
+
+```{r mobcheck, fig.cap="Diagnostics for mob-subs model"}
+resid_panel(fit_mob, plots = c("resid","qq","cookd","lev"), theme = "bw", smoother = TRUE)
+```
+
+**Observations from diagnostic**:
+
+These four plots \@ref(fig:mobcheck) are mainly to diagnose if the linear model is suitable and holding the model assumptions. The residual plot shows a pattern and the points are not scattering along the zero line randomly. It suggests either the current model does not hold the linear model assumptions or there is some problems with the model formation (i.e. check the independent variables used)  
+
+Plus, from the Q-Q plot, it has a clear deviated top end tail, which indicates the theoretical prediction is diverging from the sample estimates and results in inaccurate prediction result/conclusion. Lastly, the Cook's D and Leverage plot show there are multiple extreme values in the sample data, which may be the reason that constructs a spurious linear relationship between variables (i.e. the findings in `EDA-1, 3.3`).
+
+
 
 ```{r testplot-landline, fig.cap="Fitting linear regression for telephone subsripitions in each continent"}
 land_test <- comb_new %>% 
@@ -632,7 +648,8 @@ land_test <- comb_new %>%
   geom_point()+
   geom_smooth(method = "lm", se = F)+
   facet_wrap(~ continent, scales = 'free')+
-  theme_bw()
+  theme_bw()+
+  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")
 ggplotly(land_test)
 ```
 
@@ -642,7 +659,7 @@ Figure \@ref(fig:testplot-landline) illustrates the "gdp_poer_cap" variable may 
 
 Meanwhile, the other three variables provided in the data set are also important factors in explaining the variation of landline subscriptions. Thus, here has constructed a linear regression model for `land-line subscription`:
 
- $$\widehat{mobile-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobile_subs - 0.6326~year1990$$ 
+ $$\widehat{landline-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobilesubs - 0.6326~year1990$$ 
 
 _(Note: Variable "total_pop"'s effect in this model is too small to show, hence hidden for presentation.)_
 
@@ -656,8 +673,21 @@ glance(fit_land)
 Above is the statistical information summary for this linear regression model. The value of R square for this linear model is `r glance(fit_land)$r.squared`, which suggests that around 50.06% of the variation in mobile phone subscription can be explained using variables "total_pop", "gdp_per_cap", "year 1990" and "mobile_subs".
 
 
-This linear model contains all the significant variables to explain the variation of landline subscription, yet the statistics suggest these may not be the suitable ones. Moreover, these estimate coefficients of each variable in the model are very small. Although, the p-value suggests the all are the important factors yet the effect and help on explaining and predicting the changes in landline subscription is limited or minor. Hence, understanding the variation of landline subscription rate requires additional relevant information and for constructing a possible prediction model.
+This linear model contains all the significant variables to explain the variation of landline subscription, yet the statistics suggest these may not be the suitable ones (a low R square value). Moreover, these estimate coefficients of each variable in the model are very small. Although, the p-value suggests they all are the important factors yet the effect and help on explaining and predicting the changes in landline subscription is limited or minor. Hence, understanding the variation of landline subscription rate requires additional relevant information and for constructing a possible prediction model as well.
 
+
+> Diagnostics on this linear model - `land-line subscription rate`
+
+```{r landcheck, fig.cap="Diagnostics for landline-subs model"}
+resid_panel(fit_land, plots = c("resid","qq","cookd","lev"), theme = "bw", smoother = TRUE)+
+  labs(title = "Residual Panels for Diagnostic")
+```
+
+**Observations from diagnostic**:
+
+Similarly, it's necessary to check if the linear model is a suitable model for landline subscription rates. Figure \@ref(fig:landcheck) contains the residual plot which shows a pattern of scattering and the points are not scattering along the zero line randomly. This suggests either the current model does not hold the linear model assumptions or there are some problems with the model formation (i.e. check the independent variables used).  
+
+From the Q-Q plot, it has a clear deviated top and bottom tail, which indicates the theoretical prediction is diverging from the sample estimates and results in inaccurate prediction. In the Cook's D and Leverage plot, they show there are multiple extreme values in the sample data that are more than the last model diagnostic (in \@ref(fig:mobcheck) ).
 
 
 
@@ -665,24 +695,78 @@ This linear model contains all the significant variables to explain the variatio
 
 After the attempt of fitting linear regressions for both `mobile phone subscription` and `land-line subscription`, it suggests this approach may not be the best way in terms of understanding the variation of both target variables. Thus, the non-parametric approach may shine some light on the issue.
 
-```{r}
+From observations in previous statistical information, it suggests to fit a non-parametric regression for both `mobile phone subscription` and `land-line subscription`. To obtain a comparison with previous ones (i.e. \@ref(fig:testplot-mobile) and \@ref(fig:testplot-landline)), for `mobile phone subscription`, it will use the varaible "year1990" where for `land-line subscription` it will use variable "gdp_per_cap".
 
+
+```{r losess-mob, fig.cap="Fitting a non-parametric regression for mobile subscription by continents"}
+ggplot(comb_new, aes(x = year1990, y= mobile_subs)) + 
+  geom_point() +
+  geom_smooth(method = loess, se = FALSE,
+              method.args = list(span = 0.5),
+              size = 2) +
+  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
+  facet_wrap(~ continent, scales = 'free')+
+  theme_bw()
 ```
 
+```{r losess-mob-whole, fig.cap="Fitting a non-parametric regression for mobile subscription"}
+ggplot(comb_new, aes(x = year1990, y= mobile_subs)) + 
+  geom_point() +
+  geom_smooth(method = loess, se = FALSE,
+              method.args = list(span = 0.5),
+              size = 2) +
+  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
+  theme_bw()
+```
 
-"?? 首先用linear还有LOESS来判断可以用linear。
-然后尝试要不要把continent加入到linear model里面去，因为不同continent的 mobile phone subscriptions 不同。??"
+Figure \@ref(fig:losess-mob) provides a comparison to figure \@ref(fig:testplot-mobile). It shows Africa and Asia share a similar fitting regression, where Europe and Americas (both North and South) share a similar regression pattern, yet Oceania is the odd one that has a special regression pattern. 
 
-!!! Use of conditioning plots (Coplots)? for time factor (i.e. with in the same year? link it to the new question 1)
+In figure \@ref(fig:losess-mob-whole), it illustrates the overall regression line, which is not a straight line yet providing some insights for the later model formation and data analysis.
 
-### Diagnostics on the linear fitting model
 
-Use of `resid_panel`
+```{r, losess-landline, fig.cap ="Fitting a non-parametric regression for land-line subscription by continents"}
+
+ggplot(comb_new, aes(x = gdp_per_cap, y= landline_subs)) + 
+  geom_point() +
+  geom_smooth(method = loess, se = FALSE,
+              method.args = list(span = 0.5),
+              size = 2) +
+  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")+
+  facet_wrap(~ continent, scales = 'free')+
+  theme_bw()
+  
+```
+
+```{r losess-landline-whole, fig.cap ="Fitting a non-parametric regression for land-line subscription"}
+ggplot(comb_new, aes(x = gdp_per_cap, y= landline_subs)) + 
+  geom_point() +
+  geom_smooth(method = loess, se = FALSE,
+              method.args = list(span = 0.5),
+              size = 2) +
+  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")+
+  theme_bw()
+```
+
+Figure \@ref(fig:losess-landline) provides a comparison to figure \@ref(fig:testplot-landline). It shows all continents are having a special regression pattern, which may indicate the subscription rate of the landline is not predictable by using the information in the given data sets. 
+
+Even in figure \@ref(fig:losess-landline-whole), it doesn't show an acceptable good fit regression line as a whole. This further support the information given is not enough to construct a reliable model to explain the variation for `land-line subscription rates`. 
+
 
 
 ## Summary of findings 
 
+ - For `new research question 1`:
+ 
+  1. 
+  2. 
 
+
+
+ - For `new research question 2`:
+ 
+  1. For both `mobile subscription` and `landline subscription`, the linear regression model is likely not the suitable model to use for explaining the variation of both variables in this case.  
+  2. The previous testing in `EDA-1, section 3.3` has been proved incorrect with evidences in the statistical diagnostic results in this section.  
+  3. Attempt for fitting a non-parametric regression provides certain hints for further model formation in `mobile subscription`, yet requiring additional relevant information for `landline subscription`'s model formation in further analysis.  
 
 
 
