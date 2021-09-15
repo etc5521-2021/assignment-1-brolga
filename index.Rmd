@@ -66,15 +66,15 @@ Specially:
 
 # Data description
 
-The datasets are downloaded from the Github repository of [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-11-10). @Tidy-Tuesday is a weekly data project aimed at the R ecosystem and this report will use datasets adopted by it on November 10, 2020.
+The data sets are downloaded from the Github repository of [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-11-10). @Tidy-Tuesday is a weekly data project aimed at the R ecosystem and this report will use data sets adopted by it on November 10, 2020.
 
-There are two datasets provided in the repository and all of them came from an article-"Technology Adoption" which written by @owidtechnologyadoption on 2017 [OurWorldInData.org](https://ourworldindata.org/technology-adoption). 
+There are two data sets provided in the repository and all of them came from an article-"Technology Adoption" which written by @owidtechnologyadoption on 2017 [OurWorldInData.org](https://ourworldindata.org/technology-adoption). 
 
 @Tidy-Tuesday only made a few changes to the original data and already can get relatively clean data that can be used for analysis, mainly by matching the time of several original data, screening the data from 1990 to 2017, and adding the corresponding continent of each country.
 
 ## Fixed(landline) telephone subscriptions vs GDP per capita  (`landline.csv`)
 
-The dataset about Fixed(landline) telephone subscriptions vs GDP per capita also originated from "Technology Adoption". It published by [@Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [@ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The dataset cover the data about fixed telephone subscriptions and GPD per capita in each country during **1960** and **2017**.
+The data set about Fixed(landline) telephone subscriptions vs GDP per capita also originated from "Technology Adoption". It published by [Worldbank – World Development Indicators](http://data.worldbank.org/data-catalog/world-development-indicators) and collected by [ITU - International Telecommunication Union](https://www.itu.int/en/ITU-D/Statistics/Pages/publications/wtid.aspx). The data set cover the data about fixed telephone subscriptions and GPD per capita in each country during **1960** and **2017**.
 
 Fixed telephone subscriptions refers to the sum of active number of analogue fixed telephone lines, voice-over-IP (VoIP) subscriptions, fixed wireless local loop (WLL) subscriptions, ISDN voice-channel equivalents and fixed public payphones.
 
@@ -549,7 +549,7 @@ Data communication is indispensable in our daily life, so it is interesting and 
 
 ## New additional research questions:  
 > 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
-  2. What factors that may have influences on the change of mobile phone subscriptions?  
+  2. Any possible model formations to predict the variations on both mobile and telephone subscriptions?   
 
 ## Model Formation - `mobile subscriptions rate` & `land-line subscriptions rate`.
 
@@ -596,14 +596,15 @@ Firstly, it will pick the variable that has the greatest association (i.e. the h
  - Fitting the linear regression for mobile phone subscription using the "year1990" variable.  
  - Fitting the linear regression for landline subscription using the "gdp_per_cap" variable.
  
-```{r testplot-mobile, fig.cap="Fitting linear regression for mobile phone subsripitions in each  continent"}
+```{r testplot-mobile, fig.cap="Fitting linear regression for mobile phone subsripitions in each continent"}
 mob_test <- comb_new %>% 
   ggplot(aes(x = year1990, y = mobile_subs))+
   geom_point()+
   geom_smooth(method = "lm", se = F)+
   facet_wrap(~ continent, scales = 'free')+
   theme_bw()+
-  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")
+  labs(title = "Fitting linear regression for mobile subsripitions in each continent",
+       x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")
 ggplotly(mob_test)
 ```
 
@@ -611,7 +612,7 @@ From these plots \@ref(fig:testplot-mobile), it illustrates the "year" variable 
 
 Furthermore, besides the "year" variable, the "gdp per capita" also is an important factor for changes in mobile subscription in this data. Thus, here has constructed a linear regression model for `mobile phone subscription`:
 
- $$\widehat{mobile-subs} = -33.5686 + 4.8791~year1990 + 0.0009~gdp-per-cap$$ 
+ $$\widehat{mobile-subs} = -33.5686 + 4.8791~year1990 + 0.0009~(gdp-per-cap)$$ 
 
 
 
@@ -631,7 +632,8 @@ The possible inference example: in the same year after 1990, the change in GDP p
 > Diagnostics on this linear model - `mobile phone subscription rate`
 
 ```{r mobcheck, fig.cap="Diagnostics for mob-subs model"}
-resid_panel(fit_mob, plots = c("resid","qq","cookd","lev"), theme = "bw", smoother = TRUE)
+resid_panel(fit_mob, plots = c("resid","qq","cookd","lev"), theme = "bw", smoother = TRUE)+
+  labs(title = "Diagnostics plots for mobile subscription model")
 ```
 
 **Observations from diagnostic**:
@@ -642,14 +644,15 @@ Plus, from the Q-Q plot, it has a clear deviated top end tail, which indicates t
 
 
 
-```{r testplot-landline, fig.cap="Fitting linear regression for telephone subsripitions in each continent"}
+```{r testplot-landline, fig.cap="Fitting linear regression for landline subsripitions in each continent"}
 land_test <- comb_new %>% 
   ggplot(aes(x = gdp_per_cap, y = landline_subs))+
   geom_point()+
   geom_smooth(method = "lm", se = F)+
   facet_wrap(~ continent, scales = 'free')+
   theme_bw()+
-  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")
+  labs(title = "Fitting linear regression for landline subsripitions in each continent",
+       x = "GDP per Capita", y = "Landline Subscription Rate")
 ggplotly(land_test)
 ```
 
@@ -659,7 +662,7 @@ Figure \@ref(fig:testplot-landline) illustrates the "gdp_poer_cap" variable may 
 
 Meanwhile, the other three variables provided in the data set are also important factors in explaining the variation of landline subscriptions. Thus, here has constructed a linear regression model for `land-line subscription`:
 
- $$\widehat{landline-subs} = 11.408  + 0.0006~gdp-per-cap + 0.139~mobilesubs - 0.6326~year1990$$ 
+ $$\widehat{landline-subs} = 11.408  + 0.0006~(gdp-per-cap) + 0.139~(mobile-subs) - 0.6326~year1990$$ 
 
 _(Note: Variable "total_pop"'s effect in this model is too small to show, hence hidden for presentation.)_
 
@@ -680,7 +683,7 @@ This linear model contains all the significant variables to explain the variatio
 
 ```{r landcheck, fig.cap="Diagnostics for landline-subs model"}
 resid_panel(fit_land, plots = c("resid","qq","cookd","lev"), theme = "bw", smoother = TRUE)+
-  labs(title = "Residual Panels for Diagnostic")
+  labs(title = "Diagnostics plots for landline subscription model")
 ```
 
 **Observations from diagnostic**:
@@ -704,7 +707,8 @@ ggplot(comb_new, aes(x = year1990, y= mobile_subs)) +
   geom_smooth(method = loess, se = FALSE,
               method.args = list(span = 0.5),
               size = 2) +
-  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
+  labs(title = "Fitting a non-parametric regression for mobile subsripitions in each continent",
+       x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
   facet_wrap(~ continent, scales = 'free')+
   theme_bw()
 ```
@@ -715,7 +719,8 @@ ggplot(comb_new, aes(x = year1990, y= mobile_subs)) +
   geom_smooth(method = loess, se = FALSE,
               method.args = list(span = 0.5),
               size = 2) +
-  labs(x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
+  labs(title = "Fitting a non-parametric regression for mobile subsripitions",
+       x = "Year starting from 1990", y = "Mobile Phone Subscription Rate")+
   theme_bw()
 ```
 
@@ -731,7 +736,8 @@ ggplot(comb_new, aes(x = gdp_per_cap, y= landline_subs)) +
   geom_smooth(method = loess, se = FALSE,
               method.args = list(span = 0.5),
               size = 2) +
-  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")+
+  labs(title = "Fitting a non-parametric regression for landline subsripitions in each continent",
+       x = "GDP per Capita", y = "Land-line Subscription Rate")+
   facet_wrap(~ continent, scales = 'free')+
   theme_bw()
   
@@ -743,7 +749,8 @@ ggplot(comb_new, aes(x = gdp_per_cap, y= landline_subs)) +
   geom_smooth(method = loess, se = FALSE,
               method.args = list(span = 0.5),
               size = 2) +
-  labs(x = "GDP per Capita", y = "Land-line Subscription Rate")+
+  labs(title = "Fitting a non-parametric regression for landline subsripitions",
+       x = "GDP per Capita", y = "Land-line Subscription Rate")+
   theme_bw()
 ```
 
