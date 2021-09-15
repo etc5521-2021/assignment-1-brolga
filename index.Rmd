@@ -54,15 +54,14 @@ It has been 45 years since the first landline telephone was invented in 1876. Th
 
 This analysis is based on information about mobile and landline phones collected by the @ITU -International Telecommunication Union and would like to analyze the phone subscription trend, percentage and other factors.
 
-Specially: 
+Research Questions: 
 
-1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?
+> 1.What is the trend in subscription of phone and landline worldwide between 1990 and 2017?  
+  2.What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?  
+  3.What is the regression relationship between phone subscriptions and other variables?   
+  4. When is the transformation of communication methods (i.e. mobile and landline phones)?  
 
-
-2.What was the growth rate of the subscription of mobile phones in each country from 2013 to 2017 and what was the proportion of the subscription of phone and landline from 2000?
-
-
-3.What is the regression relationship between phone subscriptions and other variables? 
+5. Any possible model formations to predict the variations on both mobile and telephone subscriptions? 
 
 # Data description
 
@@ -541,7 +540,10 @@ In addition, through the analysis of if there is a relationship between per capi
 
 Data communication is indispensable in our daily life, so it is interesting and worthwhile to analyze and explore this data. But we still believe that if combining the current data with smartphone subscription rate, age or education level we can get more interesting findings.
 
-# How communication changes through out 1990 to 2017 
+
+# Data Analysis (EDA) - 2
+
+## How does the communication methods change through out 1990 to 2017? 
 
 ```{r}
 landline_new <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
@@ -572,14 +574,14 @@ a <- ggplot(new_data, aes(x = year, y = mean_subscription, color = type)) + geom
 ggplotly(a)
 ```
 
-# Analysis 
+**Data Analysis** 
 
 So in this part of analysis will linked to the the previous question from **3.1** and **3.2.2**. Referring back to those questions we are analyzing the trend and proportion of mobile and landline subscription. We want to dive deeper to the extend which exactly when the trends of mobile subscription exploded compared to landline figure \@ref(fig:plot1) we have plotted the timeline of both landline and mobile subscription from all continents (Asia, Europe, Africa, Americas, and Oceanic). 
 
 The intersection point in figure \@ref(fig:plot1) shows that approximately in 2001 the usage of mobile and landline are all equal, however not all continents will have the same intersection point at 2001, this probably link to the GDP percapita from each continents since everyone might have different purchasing power. Ever since the intersection point mobile subscription has increased drastically due to change of an era people communicate more, and the advantages of using mobile subscription is the portability even though it requires a good signal transmission. 
 
 
-## Comparison between Europe and Africa 
+### Comparison between Europe and Africa
 
 ```{r}
 gdp <- data %>% 
@@ -618,18 +620,11 @@ ggplot(africa, aes(x = year, y = mean_subscription, color = type)) + geom_point(
   scale_y_continuous(breaks = seq(0, 100, 10)) + labs(y = "average subcription of 100 people", title = "Africa Landline and Mobile subscription")
 ```
 
-## Analysis 
+**Data Analysis** 
 
 After looking at the overall turning point of mobile and landline subscription we decide to take a closer look between continents. We picked Europe and Africa as a comparison. We believe that a country which has a higher GDP will have much faster intersection point probably around early 2000. Figure \@ref(fig:plot2) and \@ref(fig:plot3) gave a surprise results both the intersection almost the same with Europe a bit early compared to Africa, @hodge2005tariff mentioned that the mobile phone subscription was much cheaper compared to land line during 2001 that's why most Africans change from landline to mobile subscription. Our hypothesis was that the country with higher GDP will have an early change of communication but actually it does not really effect in this case. 
 
-# Data Analysis (EDA) - 2
-
-!!! Need adjustments on the original introduction section!!!
-
-
-## New additional research questions:  
-> 1. When is the transformation of communication methods (i.e. mobile and landline phones)?  
-  2. Any possible model formations to predict the variations on both mobile and telephone subscriptions?   
+  
 
 ## Model Formation - `mobile subscriptions rate` & `land-line subscriptions rate`.
 
@@ -854,9 +849,6 @@ Even in figure \@ref(fig:losess-landline-whole), it doesn't show an acceptable g
   1. For both `mobile subscription` and `landline subscription`, the linear regression model is likely not the suitable model to use for explaining the variation of both variables in this case.  
   2. The previous testing in `EDA-1, section 3.3` has been proved incorrect with evidences in the statistical diagnostic results in this section.  
   3. Attempt for fitting a non-parametric regression provides certain hints for further model formation in `mobile subscription`, yet requiring additional relevant information for `landline subscription`'s model formation in further analysis.  
-
-
-
 
 
 # Conclusion
