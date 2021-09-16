@@ -639,7 +639,7 @@ pair_plot
 
 From this matrix \@ref(fig:pairplot), there are observations:
 
- - For `mobile phone subscription`, it shows the variation in mobile phone subscription has a relatively strong correlation with the "year1999" variable and a moderate positive correlation with "GDP_per_capita".  
+ - For `mobile phone subscription`, it shows the variation in mobile phone subscription has a relatively strong correlation with the "year1990" variable and a moderate positive correlation with "GDP_per_capita".  
  
  - For `landline subscription`, it suggests the variation of landline subscription has a moderate positive correlation with "gdp_per_capita". Interestingly, although, the variable "total_population" has a very weak negative correlation with landline subscription's variation, yet it is suggested as a significant factor.  
 
@@ -699,7 +699,6 @@ resid_panel(fit_mob, plots = c("resid","qq","cookd","lev"), theme = "bw", smooth
 These four plots \@ref(fig:mobcheck) are mainly to diagnose if the linear model is suitable and holding the model assumptions. The residual plot shows a pattern and the points are not scattering along the zero line randomly. It suggests either the current model does not hold the linear model assumptions or there is some problems with the model formation (i.e. check the independent variables used)  
 
 Plus, from the Q-Q plot, it has a clear deviated top end tail, which indicates the theoretical prediction is diverging from the sample estimates and results in inaccurate prediction result/conclusion. Lastly, the Cook's D and Leverage plot show there are multiple extreme values in the sample data, which may be the reason that constructs a spurious linear relationship between variables (i.e. the findings in `EDA-1, 3.3`).
-
 
 
 ```{r testplot-landline, fig.cap="Fitting linear regression for landline subsripitions in each continent"}
