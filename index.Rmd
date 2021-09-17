@@ -146,6 +146,11 @@ mobile %>%
 - From Figure \@ref(fig:missing-value2), we can see that there are 4 variables that have missing values. Among them, there are many null values in `gdp_per_cap` , `total_pop`and `mocile_subs`, which may have some influence on the results of statistical analysis.  
 - This data only covers the period from 1990 to 2017. If researchers want to keep up to date with the last few years, they need to look at other data as well.
 
+## Analysis Assumptions
+
+ - The data sets contain enough information for the data exploration of this report.  
+ - Assuming the information collected in these data sets are at an acceptable level to draw reasonable conclusions.  
+ - Model formation in this report is an attempt and exploration, not the final model formation.  
 
 # Data Analysis (EDA) - 1
 
@@ -828,8 +833,12 @@ From the model formation, the initial attempt has shown the possible linear rela
 
 Data communication is indispensable in our daily life, so it is interesting and worthwhile to analyze and explore this data. With additional new data includes smartphone subscription rate, age or education level, there will be more interesting and valuable insights.
 
+## Limitations & Future Improvements 
 
-
+ - Application of the analysis conclusions should consider the effect of the incompleteness of data sets.  
+ - The application of the possible model formation is limited due to the scarcity of relevant information.  
+ - With additional related data and information, the data exploration in this report should provide additional insights.  
+ - Researching relevant resources and confirming the findings with realistic material will enhance the reliability of the conclusions.  
 
 # Acknowledge
 
